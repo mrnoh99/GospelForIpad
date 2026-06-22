@@ -3,9 +3,10 @@
 //  GospelForIpad
 //
 //  iPad reading panel that shows the "embedded text" for the active chapter:
-//  the section heading plus a verse ruler that highlights and follows the
-//  currently playing verse, driven by the bible data imported from
-//  ListenToGospel-Android (ChapterTitles / VerseTimestamps).
+//  the section heading plus the Gospel verse body text (CCK), highlighting and
+//  auto-scrolling to the verse currently being read. The current verse is
+//  derived from the playback position and the imported verse timestamps
+//  (VerseTimestamps); the body text comes from GospelText.
 //
 
 import SwiftUI
@@ -73,27 +74,27 @@ struct EmbeddedTextView: View {
         .accessibilityElement(children: .combine)
     }
 
-    // MARK: - Verse ruler
+    // MARK: - Verse text
 
     @ViewBuilder
     private func verseSection(for chapter: BibleChapter) -> some View {
-        let verseCount = chapter.knownVerseCount
-        if verseCount <= 0 {
+        let verses = chapter.verses
+        if verses.isEmpty {
             unavailableText
         } else {
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 4) {
-                        ForEach(1...verseCount, id: \.self) { verse in
+                        ForEach(verses, id: \.verse) { item in
                             VerseRow(
-                                verse: verse,
-                                startSeconds: chapter.verseStartSeconds(verse),
-                                isCurrent: verse == currentVerse
+                                verse: item.verse,
+                                text: item.text,
+                                isCurrent: item.verse == currentVerse
                             )
-                            .id(verse)
+                            .id(item.verse)
                         }
                     }
-                    .padding(.bottom, 24)
+                    .padding(.bottom, 32)
                 }
                 .onChange(of: currentVerse) { _, newValue in
                     guard let verse = newValue else { return }
@@ -107,7 +108,7 @@ struct EmbeddedTextView: View {
 
     private var unavailableText: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("이 장의 절 정보가 아직 없습니다.")
+            Text("이 장의 본문이 아직 없습니다.")
                 .font(.body)
                 .foregroundStyle(.secondary)
             Text("오디오를 재생하면 본문 위치가 함께 표시됩니다.")
@@ -122,27 +123,21 @@ struct EmbeddedTextView: View {
 
 private struct VerseRow: View {
     let verse: Int
-    let startSeconds: TimeInterval
+    let text: String
     let isCurrent: Bool
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 14) {
-            Text("\(verse)절")
-                .font(.title3.weight(isCurrent ? .bold : .regular))
-                .foregroundStyle(isCurrent ? Color.accentColor : .primary)
-                .frame(minWidth: 56, alignment: .leading)
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
+            Text("\(verse)")
+                .font(.callout.weight(.bold).monospacedDigit())
+                .foregroundStyle(isCurrent ? Color.accentColor : .secondary)
+                .frame(minWidth: 30, alignment: .trailing)
 
-            Text(timestampText)
-                .font(.subheadline.monospacedDigit())
-                .foregroundStyle(isCurrent ? Color.accentColor.opacity(0.9) : .secondary)
-
-            Spacer(minLength: 0)
-
-            if isCurrent {
-                Image(systemName: "headphones")
-                    .font(.subheadline)
-                    .foregroundStyle(Color.accentColor)
-            }
+            Text(text.isEmpty ? "—" : text)
+                .font(.title3)
+                .foregroundStyle(isCurrent ? .primary : .primary.opacity(0.85))
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 14)
@@ -154,13 +149,6 @@ private struct VerseRow: View {
         .contentShape(Rectangle())
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(verse)절")
-        .accessibilityValue(isCurrent ? "재생 중" : "")
-    }
-
-    private var timestampText: String {
-        let total = Int(startSeconds.rounded(.down))
-        let minutes = total / 60
-        let seconds = total % 60
-        return String(format: "%d:%02d", minutes, seconds)
+        .accessibilityValue(isCurrent ? "재생 중. \(text)" : text)
     }
 }

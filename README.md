@@ -8,20 +8,18 @@ iPad용 가톨릭 4복음서 오디오 듣기 앱입니다. 오디오를 재생�
 - **베이스 앱**: iPhone용 `ListenToGospel`(SwiftUI) 프로젝트를 iPad용으로 확장했습니다.
 - **오디오**: `listentogospel-android`의 `audioPack` 에셋에서 가져온 4복음서 m4a 파일
   (마태오 28장, 마르코 16장, 루카 24장, 요한 21장 — 총 89개)을 `GospelForIpad/AudioFiles`에 번들합니다.
-- **임베디드 텍스트 데이터**: Android 앱에 들어 있던 성경 데이터 파일을 Swift로 이식했습니다.
-  - `ChapterTitles.swift` — 장별 소제목 (← `ChapterTitles.kt`)
-  - `VerseTimestamps.swift` — 절별 시작 시각(ms) 추정치 (← `VerseTimestamps.kt`)
+- **임베디드 텍스트 데이터**:
+  - `ChapterTitles.swift` — 장별 소제목 (← Android `ChapterTitles.kt`)
+  - `VerseTimestamps.swift` — 절별 시작 시각(ms) 추정치 (← Android `VerseTimestamps.kt`)
+  - `GospelText.json` — 4복음서 절 본문 전체(한국어, CCK) 3,779절. `GospelText.swift`가 로드.
 
 ## 임베디드 텍스트 동작
 
-`EmbeddedTextView`가 재생 위치(`playbackElapsedSeconds`)와 `VerseTimestamps`를 이용해
-현재 재생 중인 **절 번호**를 계산하고, 해당 절을 강조하며 자동으로 스크롤합니다.
-화면 상단에는 `ChapterTitles`의 장 소제목이 표시됩니다.
-
-> 참고: 원본 저장소들에는 절 본문 전체 텍스트가 포함되어 있지 않습니다. 따라서 현재
-> 임베디드 텍스트는 **장 소제목 + 절 위치(절 번호·타임스탬프)**를 동기화해 보여 줍니다.
-> 절 본문 전체를 추가하려면 본문 데이터 소스만 채우면 동일한 동기화 로직을 그대로
-> 재사용할 수 있습니다.
+`EmbeddedTextView`가 재생 위치(`playbackElapsedSeconds`)와 `VerseTimestamps`로
+현재 재생 중인 **절 번호**를 계산한 뒤, `GospelText`의 **절 본문**을 표시하면서
+해당 절을 강조하고 자동으로 스크롤합니다. 화면 상단에는 `ChapterTitles`의
+장 소제목이 표시됩니다. 즉 오디오 재생에 맞춰 성경 본문이 따라 움직이는
+가라오케식 동기화 읽기 화면입니다.
 
 ## 레이아웃
 

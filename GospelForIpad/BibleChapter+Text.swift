@@ -32,4 +32,9 @@ extension BibleChapter {
             elapsedMs: Int((elapsedSeconds * 1000).rounded(.down))
         )
     }
+
+    /// Ordered scripture verses (number + body text) for this chapter.
+    var verses: [(verse: Int, text: String)] {
+        GospelText.verses(gospel: gospel, chapter: number)
+    }
 }
