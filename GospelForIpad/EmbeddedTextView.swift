@@ -135,7 +135,7 @@ private struct VerseRow: View {
 
             Text(text.isEmpty ? "—" : text)
                 .font(.title3)
-                .foregroundStyle(isCurrent ? .primary : .primary.opacity(0.85))
+                .foregroundStyle(Color.primary.opacity(isCurrent ? 1 : 0.85))
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
