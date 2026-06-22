@@ -11,6 +11,14 @@
 
 import SwiftUI
 
+/// Myeongjo (serif) font used throughout the reading panel.
+private extension Font {
+    static func myeongjo(_ size: CGFloat, relativeTo style: Font.TextStyle) -> Font {
+        .custom("AppleMyungjo", size: size, relativeTo: style)
+    }
+}
+
+
 struct EmbeddedTextView: View {
     @ObservedObject var player: BiblePlayerViewModel
 
@@ -51,7 +59,8 @@ struct EmbeddedTextView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 10) {
                 Text(chapter.title)
-                    .font(.largeTitle.bold())
+                    .font(.myeongjo(34, relativeTo: .largeTitle))
+                    .fontWeight(.bold)
                     .lineLimit(2)
                     .minimumScaleFactor(0.7)
                 if isLive {
@@ -65,7 +74,7 @@ struct EmbeddedTextView: View {
             let subtitle = chapter.subtitle
             if !subtitle.isEmpty {
                 Text(subtitle)
-                    .font(.title3)
+                    .font(.myeongjo(20, relativeTo: .title3))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -129,12 +138,14 @@ private struct VerseRow: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
             Text("\(verse)")
-                .font(.callout.weight(.bold).monospacedDigit())
+                .font(.myeongjo(16, relativeTo: .callout))
+                .fontWeight(.bold)
                 .foregroundStyle(isCurrent ? Color.accentColor : .secondary)
                 .frame(minWidth: 30, alignment: .trailing)
 
             Text(text.isEmpty ? "—" : text)
-                .font(.title3)
+                .font(.myeongjo(20, relativeTo: .title3))
+                .lineSpacing(4)
                 .foregroundStyle(Color.primary.opacity(isCurrent ? 1 : 0.85))
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
