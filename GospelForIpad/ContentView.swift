@@ -71,8 +71,14 @@ struct ContentView: View {
     private var adaptiveLayout: some View {
         if horizontalSizeClass == .regular {
             HStack(spacing: 0) {
-                mainLayout
-                    .frame(maxWidth: ipadSidebarWidth, maxHeight: .infinity)
+                VStack(spacing: 0) {
+                    TodayGospelView(player: player)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 12)
+
+                    mainLayout
+                }
+                .frame(maxWidth: ipadSidebarWidth, maxHeight: .infinity)
 
                 Divider()
 

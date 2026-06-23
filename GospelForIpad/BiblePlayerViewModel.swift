@@ -214,6 +214,37 @@ final class BiblePlayerViewModel: ObservableObject {
         playFromSelection()
     }
 
+    /// Plays a chapter starting at the estimated time of a 1-based verse
+    /// (used by the Today's Gospel reading, mirroring the Android behavior).
+    func playChapter(_ chapter: BibleChapter, startVerse: Int) {
+        cancelNavigationSnapBack()
+        resumeBookmark = nil
+        launchResumeOffer = nil
+
+        if chapter.gospel != selectedGospel {
+            selectedGospel = chapter.gospel
+        }
+        selectedChapter = chapter
+
+        playbackMessage = nil
+        currentPlayingChapter = nil
+
+        guard rebuildChapterQueue() else {
+            isPlaying = false
+            playbackMessage = missingAudioPlaybackMessage(for: chapter.gospel)
+            return
+        }
+
+        configureAudioSession()
+        configureNowPlayingSupportIfNeeded()
+
+        let startSeconds = chapter.verseStartSeconds(startVerse)
+        let seek = startSeconds > 0.25
+            ? CMTime(seconds: startSeconds, preferredTimescale: 600)
+            : nil
+        startPlayback(seekTo: seek)
+    }
+
     /// Tap the playing chapter row to stop; tap again to resume from the stopped position.
     func toggleChapterPlayback(_ chapter: BibleChapter) {
         if isPlaying, currentPlayingChapter == chapter {
