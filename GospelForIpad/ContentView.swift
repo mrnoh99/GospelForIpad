@@ -485,6 +485,7 @@ struct ContentView: View {
 private struct ChapterListRowView: View {
     let chapter: BibleChapter
     @ObservedObject var player: BiblePlayerViewModel
+    @ObservedObject private var fontSettings = FontSettings.shared
     let rowInsets: EdgeInsets
     let playingBackground: Color
     let iconColor: Color

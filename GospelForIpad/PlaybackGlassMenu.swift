@@ -21,6 +21,7 @@ struct PlaybackGlassMenu: View {
     let onCycleRepeat: () -> Void
 
     @ScaledMetric(relativeTo: .body) private var menuHorizontalPadding: CGFloat = AppControlLayout.barHorizontalPadding
+    @ObservedObject private var fontSettings = FontSettings.shared
 
     init(
         barHeight: CGFloat = AppControlLayout.barHeight,

@@ -24,6 +24,16 @@ enum FontChoice: String, CaseIterable, Identifiable {
         case .gothic:   return "고딕체"
         }
     }
+
+    /// Compact label for the toggle button.
+    var shortLabel: String {
+        switch self {
+        case .myeongjo: return "명조"
+        case .gothic:   return "고딕"
+        }
+    }
+
+    var toggled: FontChoice { self == .myeongjo ? .gothic : .myeongjo }
 }
 
 /// App-wide font selection, persisted in UserDefaults and observable by views.
@@ -40,6 +50,8 @@ final class FontSettings: ObservableObject {
         let raw = UserDefaults.standard.string(forKey: key) ?? ""
         choice = FontChoice(rawValue: raw) ?? .myeongjo
     }
+
+    func toggle() { choice = choice.toggled }
 }
 
 extension Font {

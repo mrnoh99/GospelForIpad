@@ -106,23 +106,23 @@ struct EmbeddedTextView: View {
         .accessibilityElement(children: .combine)
     }
 
-    // MARK: - Font menu
+    // MARK: - Font toggle
 
     private var fontMenu: some View {
-        Menu {
-            Picker("글꼴", selection: $fontSettings.choice) {
-                ForEach(FontChoice.allCases) { choice in
-                    Text(choice.label).tag(choice)
-                }
-            }
+        Button {
+            fontSettings.toggle()
         } label: {
-            Image(systemName: "textformat")
-                .font(.title3)
-                .foregroundStyle(.secondary)
-                .frame(width: 36, height: 32)
-                .contentShape(Rectangle())
+            Text(fontSettings.choice.shortLabel)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(Color.accentColor)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 5)
+                .background(Capsule().fill(Color.accentColor.opacity(0.14)))
+                .contentShape(Capsule())
         }
-        .accessibilityLabel("글꼴 선택")
+        .buttonStyle(.plain)
+        .accessibilityLabel("글꼴: \(fontSettings.choice.label)")
+        .accessibilityHint("탭하면 글꼴을 바꿉니다")
     }
 
     // MARK: - Translation tab
@@ -189,6 +189,7 @@ private struct VerseRow: View {
     let verse: Int
     let text: String
     let isCurrent: Bool
+    @ObservedObject private var fontSettings = FontSettings.shared
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
