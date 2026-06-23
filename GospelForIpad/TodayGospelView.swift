@@ -103,19 +103,19 @@ struct TodayGospelView: View {
     private var readingRow: some View {
         if let reading {
             HStack(alignment: .center, spacing: 12) {
-                VStack(alignment: .leading, spacing: 1) {
+                HStack(spacing: 6) {
                     Text(liturgicalName)
                         .font(.myeongjo(15, relativeTo: .subheadline))
                         .foregroundStyle(.primary)
                         .lineLimit(1)
-                        .minimumScaleFactor(0.8)
+                        .minimumScaleFactor(0.6)
 
                     Text(chapterLabel(for: reading))
-                        .font(.myeongjo(17, relativeTo: .callout))
+                        .font(.myeongjo(16, relativeTo: .callout))
                         .fontWeight(.semibold)
                         .foregroundStyle(Color.accentColor)
                         .lineLimit(1)
-                        .minimumScaleFactor(0.8)
+                        .fixedSize()
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .contentShape(Rectangle())
