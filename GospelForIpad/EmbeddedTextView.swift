@@ -54,11 +54,27 @@ struct EmbeddedTextView: View {
             Divider()
                 .padding(.vertical, 16)
             verseSection(for: chapter)
+            licenseFooter
         }
         .padding(28)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(Color(uiColor: .systemBackground))
         .accessibilityElement(children: .contain)
+    }
+
+    /// Copyright / licensing note for the currently selected translation.
+    private var licenseFooter: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            Image(systemName: "c.circle")
+                .font(.caption2)
+            Text(translation.licenseNote)
+                .font(.caption2)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .foregroundStyle(.tertiary)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top, 12)
+        .accessibilityLabel("본문 저작권: \(translation.licenseNote)")
     }
 
     // MARK: - Header

@@ -41,6 +41,32 @@ enum BibleTranslation: String, CaseIterable, Identifiable, Sendable {
         case .nab:         return "GospelTextNAB"
         }
     }
+
+    /// Full title shown with the licensing note.
+    var fullName: String {
+        switch self {
+        case .cck:         return "성경 (한국 천주교 주교회의)"
+        case .anniversary: return "200주년 기념 신약성서"
+        case .kcb:         return "공동번역 성서"
+        case .nab:         return "New American Bible, revised edition (NABRE)"
+        }
+    }
+
+    /// Copyright / licensing note for this translation. All four texts are
+    /// copyrighted (none are public domain); distribution requires permission
+    /// from the respective rights holder.
+    var licenseNote: String {
+        switch self {
+        case .cck:
+            return "「성경」 © 한국천주교주교회의·한국천주교중앙협의회(CBCK). 저작권 보유 — 배포 시 허가 필요."
+        case .anniversary:
+            return "「200주년 기념 신약성서」 © 분도출판사. 저작권 보유 — 배포 시 허가 필요."
+        case .kcb:
+            return "「공동번역 성서」 © 대한성서공회. 저작권 보유 — 배포 시 허가 필요."
+        case .nab:
+            return "New American Bible, revised edition © Confraternity of Christian Doctrine (USCCB). 배포 시 라이선스 필요."
+        }
+    }
 }
 
 enum GospelText {
