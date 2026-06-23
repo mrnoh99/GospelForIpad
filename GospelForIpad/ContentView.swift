@@ -791,20 +791,44 @@ private struct ControlsHeaderBottomOffsetKey: PreferenceKey {
 
 // MARK: - Reading sheet (compact)
 
-/// Presents the synchronized scripture reading panel as a sheet on iPhone.
+/// Presents the synchronized scripture reading panel as a sheet on iPhone,
+/// keeping the play/stop bar pinned at the bottom.
 private struct ReadingSheet: View {
     @ObservedObject var player: BiblePlayerViewModel
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
-            EmbeddedTextView(player: player)
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button("닫기") { dismiss() }
+            VStack(spacing: 0) {
+                EmbeddedTextView(player: player)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                Divider()
+
+                PlaybackGlassMenu(
+                    chapterTitle: player.playbackTargetChapterTitle,
+                    isPlaying: player.isPlaying,
+                    onPlayStop: {
+                        if player.isPlaying {
+                            player.stop()
+                        } else if player.resumePlaybackAfterStop() {
+                        } else if player.resumeFromLaunchOffer() {
+                        } else {
+                            player.playFromSelection()
+                        }
                     }
+                )
+                .padding(.horizontal, AppControlLayout.floatingBarHorizontalInset)
+                .padding(.top, AppControlLayout.floatingBarVerticalInset)
+                .padding(.bottom, AppControlLayout.floatingBarVerticalInset)
+            }
+            .background(.background)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("닫기") { dismiss() }
                 }
+            }
         }
         .presentationDragIndicator(.visible)
     }
