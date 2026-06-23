@@ -75,7 +75,8 @@ struct PlaybackGlassMenu: View {
             )
 
             Text(chapterTitle)
-                .font(AppControlTypography.prominentLabelFont)
+                .font(.myeongjo(18, relativeTo: .title3))
+                .fontWeight(.semibold)
                 .foregroundStyle(Color.accentColor)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)

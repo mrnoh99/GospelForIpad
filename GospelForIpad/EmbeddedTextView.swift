@@ -11,14 +11,6 @@
 
 import SwiftUI
 
-/// Myeongjo (serif) font used throughout the reading panel.
-private extension Font {
-    static func myeongjo(_ size: CGFloat, relativeTo style: Font.TextStyle) -> Font {
-        .custom("AppleMyungjo", size: size, relativeTo: style)
-    }
-}
-
-
 struct EmbeddedTextView: View {
     @ObservedObject var player: BiblePlayerViewModel
 

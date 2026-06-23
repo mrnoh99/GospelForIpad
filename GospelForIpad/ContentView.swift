@@ -26,7 +26,6 @@ struct ContentView: View {
     @ScaledMetric(relativeTo: .body) private var chapterListGlassPeek: CGFloat = 24
     @ScaledMetric(relativeTo: .body) private var floatingHeaderFadeHeight: CGFloat = 36
     @ScaledMetric(relativeTo: .body) private var floatingPlaybackFadeHeight: CGFloat = 48
-    @ScaledMetric(relativeTo: .largeTitle) private var estimatedAppTitleHeight: CGFloat = 41
     @ScaledMetric(relativeTo: .body) private var headerSectionSpacing: CGFloat = 12
     @ScaledMetric(relativeTo: .body) private var headerBottomPadding: CGFloat = 8
     @ScaledMetric(relativeTo: .body) private var controlsOverlayBottomReserve: CGFloat = 72
@@ -73,9 +72,13 @@ struct ContentView: View {
         if horizontalSizeClass == .regular {
             HStack(spacing: 0) {
                 VStack(spacing: 0) {
-                    TodayGospelView(player: player)
+                    appTitleView
                         .padding(.horizontal, 16)
                         .padding(.top, 12)
+
+                    TodayGospelView(player: player)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 8)
 
                     mainLayout
                 }
@@ -90,6 +93,10 @@ struct ContentView: View {
             .background(.background)
         } else {
             VStack(spacing: 0) {
+                appTitleView
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+
                 TodayGospelView(player: player, onOpenReading: { _ in isReadingPresented = true })
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
@@ -127,8 +134,6 @@ struct ContentView: View {
 
     private var estimatedControlsHeaderBottomOffset: CGFloat {
         topContentInset
-            + estimatedAppTitleHeight
-            + headerSectionSpacing
             + (controlBarHeight * 2 + gospelGridSpacing)
             + headerSectionSpacing
             + controlBarHeight
@@ -162,7 +167,8 @@ struct ContentView: View {
     private var appTitleView: some View {
         HStack(alignment: .firstTextBaseline) {
             Text("복음서듣기")
-                .font(.largeTitle.bold())
+                .font(.myeongjo(26, relativeTo: .title2))
+                .fontWeight(.bold)
                 .accessibilityAddTraits(.isHeader)
                 .accessibilitySortPriority(50)
 
@@ -181,14 +187,11 @@ struct ContentView: View {
     /// while the sleep timer row is left transparent so chapter rows scroll under the glass capsule.
     private var controlsHeaderChrome: some View {
         VStack(spacing: 0) {
-            VStack(spacing: headerSectionSpacing) {
-                appTitleView
-                gospelPicker
-            }
-            .padding(.top, topContentInset)
-            .padding(.bottom, headerSectionSpacing)
-            .frame(maxWidth: .infinity)
-            .background(Color(uiColor: .systemBackground))
+            gospelPicker
+                .padding(.top, topContentInset)
+                .padding(.bottom, headerSectionSpacing)
+                .frame(maxWidth: .infinity)
+                .background(Color(uiColor: .systemBackground))
 
             sleepTimerRow
                 .padding(.bottom, headerBottomPadding)
@@ -271,7 +274,8 @@ struct ContentView: View {
                     player.selectGospelInGrid(gospel)
                 } label: {
                     Text(gospel.shortName)
-                        .font(AppControlTypography.prominentLabelFont)
+                        .font(.myeongjo(19, relativeTo: .title3))
+                        .fontWeight(.semibold)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                         .frame(maxWidth: .infinity, minHeight: controlBarHeight)
@@ -407,7 +411,7 @@ struct ContentView: View {
 
     private var playbackControls: some View {
         PlaybackGlassMenu(
-            barHeight: controlBarHeight,
+            barHeight: chapterListRowMinHeight,
             chapterTitle: playButtonChapterTitle,
             isPlaying: player.isPlaying,
             elapsed: player.playbackElapsedSeconds,
@@ -572,6 +576,7 @@ private struct ChapterListRowView: View {
     private var titleRow: some View {
         HStack(spacing: 8) {
             Text(chapter.title)
+                .font(.myeongjo(18, relativeTo: .body))
                 .fontWeight(isActiveChapter ? .semibold : .regular)
                 .lineLimit(1)
                 .accessibilityHidden(true)
@@ -812,6 +817,7 @@ private struct ReadingSheet: View {
                 Divider()
 
                 PlaybackGlassMenu(
+                    barHeight: 58,
                     chapterTitle: player.playbackTargetChapterTitle,
                     isPlaying: player.isPlaying,
                     elapsed: player.playbackElapsedSeconds,

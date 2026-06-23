@@ -38,13 +38,14 @@ struct TodayGospelView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 6) {
             topRow
             readingRow
         }
-        .padding(16)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
         .background(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 14)
                 .fill(Color(uiColor: .secondarySystemBackground))
         )
         .accessibilityElement(children: .contain)
@@ -55,7 +56,7 @@ struct TodayGospelView: View {
     private var topRow: some View {
         HStack(spacing: 12) {
             Text(dateLabel)
-                .font(.subheadline)
+                .font(.myeongjo(15, relativeTo: .subheadline))
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
@@ -70,7 +71,8 @@ struct TodayGospelView: View {
                 viewedDate = LDate.today()
             } label: {
                 Text("오늘")
-                    .font(.subheadline.weight(.semibold))
+                    .font(.myeongjo(15, relativeTo: .subheadline))
+                    .fontWeight(.semibold)
                     .foregroundStyle(isToday ? Color.secondary.opacity(0.5) : Color.accentColor)
             }
             .buttonStyle(.plain)
@@ -88,7 +90,7 @@ struct TodayGospelView: View {
             Image(systemName: systemName)
                 .font(.body.weight(.semibold))
                 .foregroundStyle(.secondary)
-                .frame(width: 36, height: 32)
+                .frame(width: 32, height: 28)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -101,15 +103,16 @@ struct TodayGospelView: View {
     private var readingRow: some View {
         if let reading {
             HStack(alignment: .center, spacing: 12) {
-                VStack(alignment: .leading, spacing: 3) {
+                VStack(alignment: .leading, spacing: 1) {
                     Text(liturgicalName)
-                        .font(.callout)
+                        .font(.myeongjo(15, relativeTo: .subheadline))
                         .foregroundStyle(.primary)
-                        .lineLimit(2)
-                        .fixedSize(horizontal: false, vertical: true)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
 
                     Text(chapterLabel(for: reading))
-                        .font(.title3.weight(.semibold))
+                        .font(.myeongjo(17, relativeTo: .callout))
+                        .fontWeight(.semibold)
                         .foregroundStyle(Color.accentColor)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
@@ -125,7 +128,7 @@ struct TodayGospelView: View {
                     player.playChapter(reading.chapter, startVerse: reading.startVerse)
                 } label: {
                     Image(systemName: "play.circle.fill")
-                        .font(.system(size: 44))
+                        .font(.system(size: 32))
                         .foregroundStyle(Color.accentColor)
                 }
                 .buttonStyle(.plain)
