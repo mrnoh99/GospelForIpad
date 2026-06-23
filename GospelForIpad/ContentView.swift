@@ -410,6 +410,9 @@ struct ContentView: View {
             barHeight: controlBarHeight,
             chapterTitle: playButtonChapterTitle,
             isPlaying: player.isPlaying,
+            elapsed: player.playbackElapsedSeconds,
+            duration: player.playbackDurationSeconds,
+            repeatMode: player.repeatMode,
             onPlayStop: {
                 if player.isPlaying {
                     player.stop()
@@ -421,7 +424,10 @@ struct ContentView: View {
                 } else {
                     player.playFromSelection()
                 }
-            }
+            },
+            onBackward: { player.skipToPreviousChapter() },
+            onForward: { player.skipToNextChapter() },
+            onCycleRepeat: { player.cycleRepeatMode() }
         )
         .accessibilitySortPriority(20)
     }
@@ -808,6 +814,9 @@ private struct ReadingSheet: View {
                 PlaybackGlassMenu(
                     chapterTitle: player.playbackTargetChapterTitle,
                     isPlaying: player.isPlaying,
+                    elapsed: player.playbackElapsedSeconds,
+                    duration: player.playbackDurationSeconds,
+                    repeatMode: player.repeatMode,
                     onPlayStop: {
                         if player.isPlaying {
                             player.stop()
@@ -816,7 +825,10 @@ private struct ReadingSheet: View {
                         } else {
                             player.playFromSelection()
                         }
-                    }
+                    },
+                    onBackward: { player.skipToPreviousChapter() },
+                    onForward: { player.skipToNextChapter() },
+                    onCycleRepeat: { player.cycleRepeatMode() }
                 )
                 .padding(.horizontal, AppControlLayout.floatingBarHorizontalInset)
                 .padding(.top, AppControlLayout.floatingBarVerticalInset)

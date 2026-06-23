@@ -13,6 +13,13 @@ import Foundation
 import MediaPlayer
 #endif
 
+/// Repeat behavior for the playback bar: off, repeat the whole gospel, repeat one chapter.
+enum RepeatMode: CaseIterable {
+    case off
+    case all
+    case one
+}
+
 @MainActor
 final class BiblePlayerViewModel: ObservableObject {
     enum SleepTimerOption: String, CaseIterable, Identifiable {
@@ -80,6 +87,7 @@ final class BiblePlayerViewModel: ObservableObject {
     /// Duration of the current `AVPlayerItem` when known (`> 0`); otherwise `0`.
     @Published private(set) var playbackDurationSeconds: TimeInterval = 0
     @Published private(set) var launchResumeOffer: LaunchResumeOffer?
+    @Published var repeatMode: RepeatMode = .off
 
     private let player = AVQueuePlayer()
     private let supportedAudioExtensions = ["m4a", "mp3"]
@@ -256,6 +264,41 @@ final class BiblePlayerViewModel: ObservableObject {
             if resumeFromLaunchOffer() { return }
         }
         play(selectedChapter)
+    }
+
+    // MARK: - Transport (forward / backward / repeat)
+
+    /// Cycles the repeat mode: off → 전체반복 → 장반복 → off.
+    func cycleRepeatMode() {
+        switch repeatMode {
+        case .off: repeatMode = .all
+        case .all: repeatMode = .one
+        case .one: repeatMode = .off
+        }
+    }
+
+    /// Plays the next chapter within the current gospel (wraps to the first).
+    func skipToNextChapter() {
+        let base = currentPlayingChapter ?? selectedChapter
+        play(chapter(base, offsetBy: 1))
+    }
+
+    /// Music-app behavior: restart the current chapter if it has been playing for
+    /// more than 3 seconds; otherwise go to the previous chapter (wraps to the last).
+    func skipToPreviousChapter() {
+        if isPlaying, playbackElapsedSeconds > 3 {
+            player.seek(to: .zero)
+            refreshPlaybackProgressForUI()
+            return
+        }
+        let base = currentPlayingChapter ?? selectedChapter
+        play(chapter(base, offsetBy: -1))
+    }
+
+    private func chapter(_ base: BibleChapter, offsetBy delta: Int) -> BibleChapter {
+        let count = base.gospel.chapterCount
+        let index = (((base.number - 1 + delta) % count) + count) % count
+        return BibleChapter(gospel: base.gospel, number: index + 1)
     }
 
     /// Tap the playing chapter row to stop; tap again to resume from the stopped position.
@@ -868,11 +911,33 @@ final class BiblePlayerViewModel: ObservableObject {
             queue: .main
         ) { _ in
             Task { @MainActor [weak self] in
-                self?.handlePotentialQueueItemTransition()
+                self?.handleItemDidEnd(item)
             }
         }
 
         playbackObservers.append(observer)
+    }
+
+    /// Handles a finished chapter, applying the active repeat mode.
+    private func handleItemDidEnd(_ item: AVPlayerItem) {
+        switch repeatMode {
+        case .one:
+            if let chapter = itemChapters[ObjectIdentifier(item)] {
+                play(chapter)
+                return
+            }
+        case .all:
+            handlePotentialQueueItemTransition()
+            Task { @MainActor [weak self] in
+                await Task.yield()
+                guard let self, self.repeatMode == .all, self.player.currentItem == nil else { return }
+                self.play(BibleChapter(gospel: self.selectedGospel, number: 1))
+            }
+            return
+        case .off:
+            break
+        }
+        handlePotentialQueueItemTransition()
     }
 
     private func addPlaybackTimeObserverIfNeeded() {
