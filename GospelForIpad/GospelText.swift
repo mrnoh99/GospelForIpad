@@ -14,6 +14,11 @@ enum BibleTranslation: String, CaseIterable, Identifiable, Sendable {
     case cck          // 한국 천주교 주교회의 「성경」
     case anniversary  // 200주년 기념 성서
     case kcb          // 공동번역 성서 (Korean Common Bible)
+    // NAB / NABRE (New American Bible, revised edition).
+    // ⚠️ Copyright © Confraternity of Christian Doctrine (USCCB). Bundling the
+    // full Gospel text in a distributed app (free or paid) requires a USCCB/CCD
+    // license + permissions fee. Ship only after that license is secured.
+    case nab
 
     var id: String { rawValue }
 
@@ -23,6 +28,7 @@ enum BibleTranslation: String, CaseIterable, Identifiable, Sendable {
         case .cck:         return "성경"
         case .anniversary: return "200주년"
         case .kcb:         return "공동번역"
+        case .nab:         return "NAB"
         }
     }
 
@@ -32,6 +38,7 @@ enum BibleTranslation: String, CaseIterable, Identifiable, Sendable {
         case .cck:         return "GospelText"
         case .anniversary: return "GospelText200"
         case .kcb:         return "GospelTextKCB"
+        case .nab:         return "GospelTextNAB"
         }
     }
 }
