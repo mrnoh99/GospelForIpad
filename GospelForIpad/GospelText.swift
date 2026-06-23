@@ -20,7 +20,7 @@ enum BibleTranslation: String, CaseIterable, Identifiable, Sendable {
     /// Short label for the tab/segmented control.
     var shortName: String {
         switch self {
-        case .cck:         return "주교회의"
+        case .cck:         return "성경"
         case .anniversary: return "200주년"
         case .kcb:         return "공동번역"
         }

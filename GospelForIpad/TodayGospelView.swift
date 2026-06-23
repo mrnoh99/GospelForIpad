@@ -11,6 +11,8 @@ import SwiftUI
 
 struct TodayGospelView: View {
     @ObservedObject var player: BiblePlayerViewModel
+    /// When set (compact layout), tapping the reading info opens it for reading.
+    var onOpenReading: ((Lectionary.Reading) -> Void)? = nil
     @State private var viewedDate: Date = LDate.today()
 
     private var reading: Lectionary.Reading? {
@@ -114,7 +116,10 @@ struct TodayGospelView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .contentShape(Rectangle())
-                .onTapGesture { preview(reading) }
+                .onTapGesture {
+                    preview(reading)
+                    onOpenReading?(reading)
+                }
 
                 Button {
                     player.playChapter(reading.chapter, startVerse: reading.startVerse)

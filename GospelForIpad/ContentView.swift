@@ -12,6 +12,7 @@ struct ContentView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @ObservedObject private var player = BiblePlayerStore.shared.viewModel
     @State private var isSleepTimerPickerPresented = false
+    @State private var isReadingPresented = false
     @ScaledMetric(relativeTo: .body) private var ipadSidebarWidth: CGFloat = 440
     @State private var controlsHeaderBottomOffset: CGFloat = 0
     @ScaledMetric(relativeTo: .body) private var chapterListRowMinHeight: CGFloat = 58
@@ -88,8 +89,32 @@ struct ContentView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(.background)
         } else {
-            mainLayout
+            VStack(spacing: 0) {
+                TodayGospelView(player: player, onOpenReading: { _ in isReadingPresented = true })
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+
+                mainLayout
+            }
+            .sheet(isPresented: $isReadingPresented) {
+                ReadingSheet(player: player)
+            }
         }
+    }
+
+    /// Book button (compact only) that opens the scripture reading sheet.
+    private var readingButton: some View {
+        Button {
+            isReadingPresented = true
+        } label: {
+            Image(systemName: "book")
+                .font(.title3)
+                .foregroundStyle(Color.accentColor)
+                .frame(width: 36, height: 36)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("성경 본문 보기")
     }
 
     /// Top scroll inset: keeps chapter rows below the title and 2×2 grid (no overlap with 「복음서듣기」).
@@ -135,11 +160,20 @@ struct ContentView: View {
     }
 
     private var appTitleView: some View {
-        Text("복음서듣기")
-            .font(.largeTitle.bold())
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .accessibilityAddTraits(.isHeader)
-            .accessibilitySortPriority(50)
+        HStack(alignment: .firstTextBaseline) {
+            Text("복음서듣기")
+                .font(.largeTitle.bold())
+                .accessibilityAddTraits(.isHeader)
+                .accessibilitySortPriority(50)
+
+            Spacer(minLength: 8)
+
+            if horizontalSizeClass != .regular {
+                readingButton
+                    .alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     /// Title + gospel grid + sleep timer; measured height is the chapter list top inset.
@@ -752,6 +786,27 @@ private struct ControlsHeaderBottomOffsetKey: PreferenceKey {
 
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = max(value, nextValue())
+    }
+}
+
+// MARK: - Reading sheet (compact)
+
+/// Presents the synchronized scripture reading panel as a sheet on iPhone.
+private struct ReadingSheet: View {
+    @ObservedObject var player: BiblePlayerViewModel
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            EmbeddedTextView(player: player)
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("닫기") { dismiss() }
+                    }
+                }
+        }
+        .presentationDragIndicator(.visible)
     }
 }
 
