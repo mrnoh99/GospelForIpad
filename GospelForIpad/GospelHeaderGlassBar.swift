@@ -13,6 +13,7 @@ struct GospelHeaderGlassBar<SleepTimerLabel: View>: View {
     @ViewBuilder var sleepTimerLabel: () -> SleepTimerLabel
 
     @ScaledMetric(relativeTo: .body) private var horizontalPadding: CGFloat = AppControlLayout.barHorizontalPadding
+    @ObservedObject private var fontSettings = FontSettings.shared
 
     init(
         barHeight: CGFloat = AppControlLayout.barHeight,
@@ -30,7 +31,7 @@ struct GospelHeaderGlassBar<SleepTimerLabel: View>: View {
         Button(action: performSleepTimerTap) {
             HStack(alignment: .center, spacing: 12) {
                 Text(gospelName)
-                    .font(AppControlTypography.labelFont)
+                    .font(.app(17, relativeTo: .body, bold: true))
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -46,7 +47,7 @@ struct GospelHeaderGlassBar<SleepTimerLabel: View>: View {
                     Image(systemName: "timer")
                         .accessibilityHidden(true)
                 }
-                .font(AppControlTypography.labelFont)
+                .font(.app(17, relativeTo: .body, bold: true))
                 .labelStyle(.titleAndIcon)
                 .fixedSize(horizontal: true, vertical: false)
             }
