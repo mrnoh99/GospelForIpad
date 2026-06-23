@@ -245,6 +245,19 @@ final class BiblePlayerViewModel: ObservableObject {
         startPlayback(seekTo: seek)
     }
 
+    /// iPad: start playback of the currently selected chapter. Resumes if the
+    /// selection matches a stopped/launch resume point, otherwise plays from its start.
+    func startSelected() {
+        cancelNavigationSnapBack()
+        if let bookmark = resumeBookmark, bookmark.chapter == selectedChapter {
+            if resumePlaybackAfterStop() { return }
+        }
+        if let offer = launchResumeOffer, offer.chapter == selectedChapter {
+            if resumeFromLaunchOffer() { return }
+        }
+        play(selectedChapter)
+    }
+
     /// Tap the playing chapter row to stop; tap again to resume from the stopped position.
     func toggleChapterPlayback(_ chapter: BibleChapter) {
         if isPlaying, currentPlayingChapter == chapter {
