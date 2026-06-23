@@ -17,6 +17,8 @@ struct EmbeddedTextView: View {
     /// Persisted translation selection (shared across launches).
     @AppStorage("embeddedTextTranslation") private var translationRaw = BibleTranslation.cck.rawValue
 
+    @ObservedObject private var fontSettings = FontSettings.shared
+
     private var translation: BibleTranslation {
         BibleTranslation(rawValue: translationRaw) ?? .cck
     }
@@ -76,7 +78,7 @@ struct EmbeddedTextView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 10) {
                 Text(chapter.title)
-                    .font(.myeongjo(34, relativeTo: .largeTitle))
+                    .font(.app(34, relativeTo: .largeTitle))
                     .fontWeight(.bold)
                     .lineLimit(2)
                     .minimumScaleFactor(0.7)
@@ -86,18 +88,41 @@ struct EmbeddedTextView: View {
                         .labelStyle(.titleAndIcon)
                         .foregroundStyle(Color.accentColor)
                 }
+
+                Spacer(minLength: 8)
+
+                fontMenu
             }
 
             let subtitle = chapter.subtitle
             if !subtitle.isEmpty {
                 Text(subtitle)
-                    .font(.myeongjo(20, relativeTo: .title3))
+                    .font(.app(20, relativeTo: .title3))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
+    }
+
+    // MARK: - Font menu
+
+    private var fontMenu: some View {
+        Menu {
+            Picker("글꼴", selection: $fontSettings.choice) {
+                ForEach(FontChoice.allCases) { choice in
+                    Text(choice.label).tag(choice)
+                }
+            }
+        } label: {
+            Image(systemName: "textformat")
+                .font(.title3)
+                .foregroundStyle(.secondary)
+                .frame(width: 36, height: 32)
+                .contentShape(Rectangle())
+        }
+        .accessibilityLabel("글꼴 선택")
     }
 
     // MARK: - Translation tab
@@ -168,13 +193,13 @@ private struct VerseRow: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
             Text("\(verse)")
-                .font(.myeongjo(16, relativeTo: .callout))
+                .font(.app(16, relativeTo: .callout))
                 .fontWeight(.bold)
                 .foregroundStyle(isCurrent ? Color.accentColor : .secondary)
                 .frame(minWidth: 30, alignment: .trailing)
 
             Text(text.isEmpty ? "—" : text)
-                .font(.myeongjo(20, relativeTo: .title3))
+                .font(.app(20, relativeTo: .title3))
                 .lineSpacing(4)
                 .foregroundStyle(Color.primary.opacity(isCurrent ? 1 : 0.85))
                 .fixedSize(horizontal: false, vertical: true)

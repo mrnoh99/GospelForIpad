@@ -11,6 +11,7 @@ struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @ObservedObject private var player = BiblePlayerStore.shared.viewModel
+    @ObservedObject private var fontSettings = FontSettings.shared
     @State private var isSleepTimerPickerPresented = false
     @State private var isReadingPresented = false
     @ScaledMetric(relativeTo: .body) private var ipadSidebarWidth: CGFloat = 440
@@ -167,7 +168,7 @@ struct ContentView: View {
     private var appTitleView: some View {
         HStack(alignment: .firstTextBaseline) {
             Text("복음서듣기")
-                .font(.myeongjo(26, relativeTo: .title2))
+                .font(.app(26, relativeTo: .title2))
                 .fontWeight(.bold)
                 .accessibilityAddTraits(.isHeader)
                 .accessibilitySortPriority(50)
@@ -274,7 +275,7 @@ struct ContentView: View {
                     player.selectGospelInGrid(gospel)
                 } label: {
                     Text(gospel.shortName)
-                        .font(.myeongjo(19, relativeTo: .title3))
+                        .font(.app(19, relativeTo: .title3))
                         .fontWeight(.semibold)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
@@ -576,7 +577,7 @@ private struct ChapterListRowView: View {
     private var titleRow: some View {
         HStack(spacing: 8) {
             Text(chapter.title)
-                .font(.myeongjo(18, relativeTo: .body))
+                .font(.app(18, relativeTo: .body))
                 .fontWeight(isActiveChapter ? .semibold : .regular)
                 .lineLimit(1)
                 .accessibilityHidden(true)
@@ -806,6 +807,7 @@ private struct ControlsHeaderBottomOffsetKey: PreferenceKey {
 /// keeping the play/stop bar pinned at the bottom.
 private struct ReadingSheet: View {
     @ObservedObject var player: BiblePlayerViewModel
+    @ObservedObject private var fontSettings = FontSettings.shared
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {

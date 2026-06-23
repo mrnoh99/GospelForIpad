@@ -2,24 +2,54 @@
 //  Typography.swift
 //  GospelForIpad
 //
-//  Shared Myeongjo (serif) font used across the app.
+//  User-selectable app font (Myeongjo serif vs system Gothic).
 //
-//  iOS/iPadOS does NOT ship a Korean serif system font (e.g. AppleMyungjo is
-//  macOS-only), so `Font.custom("AppleMyungjo", …)` silently falls back to the
-//  system font. We therefore bundle Nanum Myeongjo (OFL) — registered in
-//  Info.plist `UIAppFonts` — and reference it by its PostScript name.
+//  iOS/iPadOS has no Korean serif system font, so the Myeongjo option uses the
+//  bundled Nanum Myeongjo (registered in Info.plist `UIAppFonts`). The Gothic
+//  option uses the system font (Apple SD Gothic Neo on Korean devices).
 //
 
 import SwiftUI
+import Combine
 
-enum AppFont {
-    static let myeongjoRegular = "NanumMyeongjo"      // PostScript name
-    static let myeongjoBold = "NanumMyeongjoBold"     // PostScript name
+enum FontChoice: String, CaseIterable, Identifiable {
+    case myeongjo
+    case gothic
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .myeongjo: return "명조체"
+        case .gothic:   return "고딕체"
+        }
+    }
+}
+
+/// App-wide font selection, persisted in UserDefaults and observable by views.
+final class FontSettings: ObservableObject {
+    static let shared = FontSettings()
+
+    private let key = "appFontChoice"
+
+    @Published var choice: FontChoice {
+        didSet { UserDefaults.standard.set(choice.rawValue, forKey: key) }
+    }
+
+    private init() {
+        let raw = UserDefaults.standard.string(forKey: key) ?? ""
+        choice = FontChoice(rawValue: raw) ?? .myeongjo
+    }
 }
 
 extension Font {
-    /// Myeongjo serif font (Korean), scaling with Dynamic Type.
-    static func myeongjo(_ size: CGFloat, relativeTo style: Font.TextStyle = .body, bold: Bool = false) -> Font {
-        .custom(bold ? AppFont.myeongjoBold : AppFont.myeongjoRegular, size: size, relativeTo: style)
+    /// The app's selectable text font, scaling with Dynamic Type.
+    static func app(_ size: CGFloat, relativeTo style: Font.TextStyle = .body, bold: Bool = false) -> Font {
+        switch FontSettings.shared.choice {
+        case .myeongjo:
+            return .custom(bold ? "NanumMyeongjoBold" : "NanumMyeongjo", size: size, relativeTo: style)
+        case .gothic:
+            return .system(size: size, weight: bold ? .bold : .regular)
+        }
     }
 }

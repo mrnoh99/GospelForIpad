@@ -13,6 +13,7 @@ struct TodayGospelView: View {
     @ObservedObject var player: BiblePlayerViewModel
     /// When set (compact layout), tapping the reading info opens it for reading.
     var onOpenReading: ((Lectionary.Reading) -> Void)? = nil
+    @ObservedObject private var fontSettings = FontSettings.shared
     @State private var viewedDate: Date = LDate.today()
 
     private var reading: Lectionary.Reading? {
@@ -56,7 +57,7 @@ struct TodayGospelView: View {
     private var topRow: some View {
         HStack(spacing: 12) {
             Text(dateLabel)
-                .font(.myeongjo(15, relativeTo: .subheadline))
+                .font(.app(15, relativeTo: .subheadline))
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
@@ -71,7 +72,7 @@ struct TodayGospelView: View {
                 viewedDate = LDate.today()
             } label: {
                 Text("오늘")
-                    .font(.myeongjo(15, relativeTo: .subheadline))
+                    .font(.app(15, relativeTo: .subheadline))
                     .fontWeight(.semibold)
                     .foregroundStyle(isToday ? Color.secondary.opacity(0.5) : Color.accentColor)
             }
@@ -105,13 +106,13 @@ struct TodayGospelView: View {
             HStack(alignment: .center, spacing: 12) {
                 HStack(spacing: 6) {
                     Text(liturgicalName)
-                        .font(.myeongjo(15, relativeTo: .subheadline))
+                        .font(.app(15, relativeTo: .subheadline))
                         .foregroundStyle(.primary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.6)
 
                     Text(chapterLabel(for: reading))
-                        .font(.myeongjo(16, relativeTo: .callout))
+                        .font(.app(16, relativeTo: .callout))
                         .fontWeight(.semibold)
                         .foregroundStyle(Color.accentColor)
                         .lineLimit(1)
