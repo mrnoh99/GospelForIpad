@@ -22,6 +22,13 @@ private extension Font {
 struct EmbeddedTextView: View {
     @ObservedObject var player: BiblePlayerViewModel
 
+    /// Persisted translation selection (shared across launches).
+    @AppStorage("embeddedTextTranslation") private var translationRaw = BibleTranslation.cck.rawValue
+
+    private var translation: BibleTranslation {
+        BibleTranslation(rawValue: translationRaw) ?? .cck
+    }
+
     /// Chapter whose text we display: the one playing, otherwise the selection.
     private var displayChapter: BibleChapter {
         player.currentPlayingChapter ?? player.selectedChapter
@@ -42,6 +49,8 @@ struct EmbeddedTextView: View {
         let chapter = displayChapter
         VStack(alignment: .leading, spacing: 0) {
             header(for: chapter)
+            translationPicker
+                .padding(.top, 14)
             Divider()
                 .padding(.vertical, 16)
             verseSection(for: chapter)
@@ -83,11 +92,24 @@ struct EmbeddedTextView: View {
         .accessibilityElement(children: .combine)
     }
 
+    // MARK: - Translation tab
+
+    private var translationPicker: some View {
+        Picker("성경 번역", selection: $translationRaw) {
+            ForEach(BibleTranslation.allCases) { translation in
+                Text(translation.shortName).tag(translation.rawValue)
+            }
+        }
+        .pickerStyle(.segmented)
+        .frame(maxWidth: .infinity)
+        .accessibilityLabel("성경 번역 선택")
+    }
+
     // MARK: - Verse text
 
     @ViewBuilder
     private func verseSection(for chapter: BibleChapter) -> some View {
-        let verses = chapter.verses
+        let verses = chapter.verses(in: translation)
         if verses.isEmpty {
             unavailableText
         } else {

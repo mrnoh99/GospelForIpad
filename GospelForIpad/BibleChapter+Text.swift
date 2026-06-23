@@ -33,8 +33,8 @@ extension BibleChapter {
         )
     }
 
-    /// Ordered scripture verses (number + body text) for this chapter.
-    var verses: [(verse: Int, text: String)] {
-        GospelText.verses(gospel: gospel, chapter: number)
+    /// Ordered scripture verses (number + body text) for this chapter in the given translation.
+    func verses(in translation: BibleTranslation) -> [(verse: Int, text: String)] {
+        GospelText.verses(translation, gospel: gospel, chapter: number)
     }
 }

@@ -11,7 +11,9 @@ iPad용 가톨릭 4복음서 오디오 듣기 앱입니다. 오디오를 재생�
 - **임베디드 텍스트 데이터**:
   - `ChapterTitles.swift` — 장별 소제목 (← Android `ChapterTitles.kt`)
   - `VerseTimestamps.swift` — 절별 시작 시각(ms) 추정치 (← Android `VerseTimestamps.kt`)
-  - `GospelText.json` — 4복음서 절 본문 전체(한국어, CCK) 3,779절. `GospelText.swift`가 로드.
+  - `GospelText.json` — 4복음서 절 본문 (주교회의 「성경」) 3,779절
+  - `GospelText200.json` — 4복음서 절 본문 (200주년 기념 성서) 3,778절
+  - `GospelText.swift` — 두 번역본을 로드. `EmbeddedTextView` 상단의 세그먼트(탭)로 전환(선택은 `@AppStorage`로 유지).
 
 ## 임베디드 텍스트 동작
 
