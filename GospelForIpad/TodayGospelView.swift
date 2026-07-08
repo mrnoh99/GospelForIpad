@@ -151,6 +151,9 @@ struct TodayGospelView: View {
 
     private func chapterLabel(for reading: Lectionary.Reading) -> String {
         let c = reading.chapter
+        if reading.endVerse > reading.startVerse {
+            return "\(c.gospel.shortName) \(c.number)장 \(reading.startVerse)-\(reading.endVerse)절"
+        }
         return "\(c.gospel.shortName) \(c.number)장 \(reading.startVerse)절"
     }
 
