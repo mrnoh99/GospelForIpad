@@ -19,29 +19,9 @@ enum Lectionary {
     static func todayGospelReading(_ date: Date = LDate.today()) -> Reading? {
         let pos = LiturgicalCalendar.liturgicalPosition(date)
 
-        if pos.season == .ordinaryAfterPentecost {
-            let pentecost = LDate.addDays(LiturgicalCalendar.easterDate(LDate.year(date)), 49)
-            var override: (Bible.Gospel, Int, Int)?
-            if date == LDate.addDays(pentecost, 7) {
-                switch pos.sundayCycle {
-                case .a: override = gc(J, 3, 16)
-                case .b: override = gc(M, 28, 16)
-                case .c: override = gc(J, 16, 12)
-                }
-            } else if date == LDate.addDays(pentecost, 14) {
-                switch pos.sundayCycle {
-                case .a: override = gc(J, 6, 51)
-                case .b: override = gc(Mk, 14, 12)
-                case .c: override = gc(L, 9, 11)
-                }
-            } else if date == LDate.addDays(pentecost, 19) {
-                switch pos.sundayCycle {
-                case .a: override = gc(M, 11, 25)
-                case .b: override = gc(J, 19, 31)
-                case .c: override = gc(L, 15, 3)
-                }
-            }
-            if let override { return reading(from: override) }
+        // Proper gospels for solemnities & feasts take precedence over the seasonal cycle.
+        if let proper = properReading(date, cycle: pos.sundayCycle) {
+            return reading(from: proper)
         }
 
         let triple: (Bible.Gospel, Int, Int)?
@@ -77,6 +57,96 @@ enum Lectionary {
     }
 
     private static let sunday = 7
+
+    // MARK: - Proper gospels (solemnities & feasts)
+
+    /// Saint feasts (사도·복음사가 축일) that yield to a Sunday when they coincide with one.
+    private static let saintFeastMDs: Set<Int> = [125, 222, 425, 503, 514, 703, 824, 921, 1018, 1028, 1130, 1226, 1227, 1228]
+
+    /// Returns the proper Gospel (chapter, start verse) for a solemnity/feast on the given
+    /// date, or nil to fall back to the seasonal cycle. Cycle-dependent feasts use the Sunday cycle.
+    private static func properReading(_ date: Date, cycle: SundayCycle) -> (Bible.Gospel, Int, Int)? {
+        let year = LDate.year(date)
+        let md = LDate.month(date) * 100 + LDate.day(date)
+        let isSunday = LDate.dayOfWeek(date) == sunday
+
+        // Fixed-date solemnities & feasts (saint feasts skipped when on a Sunday).
+        if !(saintFeastMDs.contains(md) && isSunday) {
+            switch md {
+            case 101:  return gc(L, 2, 16)   // 천주의 성모 마리아 대축일
+            case 125:  return gc(Mk, 16, 15) // 성 바오로 사도의 회심 축일
+            case 202:  return gc(L, 2, 22)   // 주님 봉헌 축일
+            case 222:  return gc(M, 16, 13)  // 성 베드로 사도좌 축일
+            case 319:  return gc(M, 1, 16)   // 성 요셉 대축일
+            case 325:  return gc(L, 1, 26)   // 주님 탄생 예고 대축일
+            case 425:  return gc(Mk, 16, 15) // 성 마르코 복음사가 축일
+            case 503:  return gc(J, 14, 6)   // 성 필립보와 성 야고보 사도 축일
+            case 514:  return gc(J, 15, 9)   // 성 마티아 사도 축일
+            case 624:  return gc(L, 1, 57)   // 성 요한 세례자 탄생 대축일
+            case 629:  return gc(M, 16, 13)  // 성 베드로와 성 바오로 사도 대축일
+            case 703:  return gc(J, 20, 24)  // 성 토마스 사도 축일
+            case 806:                        // 주님의 거룩한 변모 축일
+                switch cycle { case .a: return gc(M, 17, 1); case .b: return gc(Mk, 9, 2); case .c: return gc(L, 9, 28) }
+            case 815:  return gc(L, 1, 39)   // 성모 승천 대축일
+            case 824:  return gc(J, 1, 45)   // 성 바르톨로메오 사도 축일
+            case 914:  return gc(J, 3, 13)   // 성 십자가 현양 축일
+            case 921:  return gc(M, 9, 9)    // 성 마태오 사도 복음사가 축일
+            case 1018: return gc(L, 10, 1)   // 성 루카 복음사가 축일
+            case 1028: return gc(L, 6, 12)   // 성 시몬과 성 유다 사도 축일
+            case 1101: return gc(M, 5, 1)    // 모든 성인 대축일
+            case 1102: return gc(J, 6, 37)   // 죽은 모든 이를 기억하는 위령의 날
+            case 1109: return gc(J, 2, 13)   // 라테라노 대성전 봉헌 축일
+            case 1130: return gc(M, 4, 18)   // 성 안드레아 사도 축일
+            case 1208: return gc(L, 1, 26)   // 원죄 없이 잉태되신 복되신 동정 마리아 대축일
+            case 1225: return gc(J, 1, 1)    // 주님 성탄 대축일 (낮 미사)
+            case 1226: return gc(M, 10, 17)  // 성 스테파노 첫 순교자 축일
+            case 1227: return gc(J, 20, 2)   // 성 요한 사도 복음사가 축일
+            case 1228: return gc(M, 2, 13)   // 죄 없는 아기 순교자들 축일
+            default: break
+            }
+        }
+
+        // Movable solemnities & feasts of the Lord.
+        let easter = LiturgicalCalendar.easterDate(year)
+        let ashWednesday = LDate.addDays(easter, -46)
+        let ascension = LDate.addDays(easter, 42)   // Korea: 7th Sunday of Easter
+        let pentecost = LDate.addDays(easter, 49)
+        let trinity = LDate.addDays(easter, 56)
+        let corpusChristi = LDate.addDays(easter, 63)
+        let sacredHeart = LDate.addDays(easter, 68)
+
+        if date == ashWednesday { return gc(M, 6, 1) }               // 재의 수요일
+        if date == ascension {                                       // 주님 승천 대축일
+            switch cycle { case .a: return gc(M, 28, 16); case .b: return gc(Mk, 16, 15); case .c: return gc(L, 24, 46) }
+        }
+        if date == pentecost { return gc(J, 20, 19) }                // 성령 강림 대축일
+        if date == trinity {                                         // 삼위일체 대축일
+            switch cycle { case .a: return gc(J, 3, 16); case .b: return gc(M, 28, 16); case .c: return gc(J, 16, 12) }
+        }
+        if date == corpusChristi {                                   // 성체 성혈 대축일
+            switch cycle { case .a: return gc(J, 6, 51); case .b: return gc(Mk, 14, 12); case .c: return gc(L, 9, 11) }
+        }
+        if date == sacredHeart {                                     // 예수 성심 대축일
+            switch cycle { case .a: return gc(M, 11, 25); case .b: return gc(J, 19, 31); case .c: return gc(L, 15, 3) }
+        }
+
+        // Epiphany (Korea): the Sunday between Jan 2–8.
+        if LDate.month(date) == 1, (2...8).contains(LDate.day(date)), isSunday {
+            return gc(M, 2, 1)                                        // 주님 공현 대축일
+        }
+        // Baptism of the Lord: the Sunday after Jan 6.
+        if date == LDate.next(LDate.make(year, 1, 6), weekday: sunday) {
+            switch cycle { case .a: return gc(M, 3, 13); case .b: return gc(Mk, 1, 7); case .c: return gc(L, 3, 15) }
+        }
+        // Holy Family: the Sunday in the Christmas octave (or Dec 30).
+        let dec25 = LDate.make(year, 12, 25)
+        let holyFamily = LDate.dayOfWeek(dec25) == sunday ? LDate.make(year, 12, 30) : LDate.next(dec25, weekday: sunday)
+        if date == holyFamily {
+            switch cycle { case .a: return gc(M, 2, 13); case .b: return gc(L, 2, 22); case .c: return gc(L, 2, 41) }
+        }
+
+        return nil
+    }
 
     // MARK: - Advent
 
