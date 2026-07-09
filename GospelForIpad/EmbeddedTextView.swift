@@ -74,7 +74,6 @@ struct EmbeddedTextView: View {
 
     // MARK: - Header
 
-    @ViewBuilder
     /// iPhone(compact)에서는 헤더 글자를 줄인다.
     private var titleFontSize: CGFloat { horizontalSizeClass == .regular ? 34 : 22 }
     private var subtitleFontSize: CGFloat { horizontalSizeClass == .regular ? 20 : 15 }
