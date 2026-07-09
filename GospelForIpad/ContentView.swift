@@ -370,15 +370,7 @@ struct ContentView: View {
             rowInsets: chapterListRowInsets,
             playingBackground: playingChapterRowBackground,
             iconColor: playingChapterIconColor,
-            onPlay: {
-                if horizontalSizeClass == .regular {
-                    // iPad: tapping a row only selects it; playback starts from the Play button.
-                    player.selectChapter(chapter)
-                } else {
-                    // iPhone: keep the original tap-to-play behavior.
-                    player.toggleChapterPlayback(chapter)
-                }
-            }
+            onPlay: { player.toggleChapterPlayback(chapter) }
         )
     }
 
@@ -401,19 +393,10 @@ struct ContentView: View {
         }
     }
 
-    /// On iPad the play button reflects (and starts) the selected chapter; on iPhone it keeps
-    /// the original resume-target behavior.
-    private var playButtonChapterTitle: String {
-        if horizontalSizeClass == .regular {
-            return (player.currentPlayingChapter ?? player.selectedChapter).title
-        }
-        return player.playbackTargetChapterTitle
-    }
-
     private var playbackControls: some View {
         PlaybackGlassMenu(
             barHeight: chapterListRowMinHeight,
-            chapterTitle: playButtonChapterTitle,
+            chapterTitle: player.playbackTargetChapterTitle,
             isPlaying: player.isPlaying,
             elapsed: player.playbackElapsedSeconds,
             duration: player.playbackDurationSeconds,
@@ -421,9 +404,6 @@ struct ContentView: View {
             onPlayStop: {
                 if player.isPlaying {
                     player.stop()
-                } else if horizontalSizeClass == .regular {
-                    // iPad: start the selected chapter (resumes only if the selection matches).
-                    player.startSelected()
                 } else if player.resumePlaybackAfterStop() {
                 } else if player.resumeFromLaunchOffer() {
                 } else {
