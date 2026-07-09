@@ -45,6 +45,34 @@ enum LectionaryValidator {
         }
 
         print("LectionaryValidator: \(readings) readings validated, \(gaps) gap day(s) across cycles A·B·C")
+        validateVerseTimestamps()
+    }
+
+    /// Audio verse markers are first-class data too (docs/AUDIO_TIMESTAMPS.md):
+    /// verse 1 must be 0, markers strictly increasing, counts matching the CCK text.
+    private static func validateVerseTimestamps() {
+        var chapters = 0
+        var markers = 0
+        for gospel in Bible.Gospel.allCases {
+            for chapter in 1...gospel.chapterCount {
+                let count = VerseTimestamps.verseCount(gospel: gospel, chapter: chapter)
+                assert(count > 0, "VerseTimestamps: no markers for \(gospel.shortName) \(chapter)")
+                assert(count == GospelText.verseCount(.cck, gospel: gospel, chapter: chapter),
+                       "VerseTimestamps: count mismatch vs CCK text in \(gospel.shortName) \(chapter)")
+                var previous = -1
+                for verse in 1...count {
+                    let ms = VerseTimestamps.startMs(gospel: gospel, chapter: chapter, verse: verse)
+                    if verse == 1 {
+                        assert(ms == 0, "VerseTimestamps: verse 1 of \(gospel.shortName) \(chapter) is \(ms)")
+                    }
+                    assert(ms > previous, "VerseTimestamps: not increasing at \(gospel.shortName) \(chapter):\(verse)")
+                    previous = ms
+                }
+                chapters += 1
+                markers += count
+            }
+        }
+        print("LectionaryValidator: \(markers) verse markers in \(chapters) chapters OK")
     }
 }
 #endif
