@@ -2,9 +2,19 @@
 //  Lectionary.swift
 //  GospelForIpad
 //
-//  Returns the Mass Gospel reading (chapter + start verse) for a given date,
-//  limited to the four Gospels in this app. Ported from the
-//  ListenToGospel-Android model (Lectionary.kt).
+//  ⭐️ FIRST-CLASS DATA — read docs/LECTIONARY.md before editing.
+//
+//  Maps a calendar date to the Mass Gospel reading (chapter, start verse,
+//  end verse), limited to the four Gospels bundled in this app.
+//
+//  Sources: ListenToGospel-Android Lectionary.kt (base tables); Ordo Lectionum
+//  Missae (verse ranges); Korean CBCK practice (Epiphany on the Jan 2–8 Sunday,
+//  Ascension on the 7th Sunday of Easter). Verified against the official CBCK
+//  2026 calendar and daily-mass readings — see docs/LECTIONARY.md §3.
+//
+//  Every reference uses gc(book, chapter, start, end). After ANY edit run:
+//      python3 scripts/validate_lectionary.py        (offline table check)
+//  and launch a DEBUG build (LectionaryValidator sweeps cycles A·B·C).
 //
 
 import Foundation

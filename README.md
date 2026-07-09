@@ -55,6 +55,10 @@ Android 앱의 "오늘의 복음" 기능을 이식했습니다.
 
 iPad 레이아웃에서는 좌측 컬럼 상단에 이 카드가 배치됩니다.
 
+> ⭐️ 전례력·독서 데이터는 이 앱의 **1급 데이터**입니다. 출처·검증 이력·수정 절차는
+> [`docs/LECTIONARY.md`](docs/LECTIONARY.md)를 따르세요. 수정 후에는 반드시
+> `python3 scripts/validate_lectionary.py` 와 DEBUG 빌드 검증(LectionaryValidator)을 실행합니다.
+
 ## 레이아웃
 
 `ContentView`는 가로 크기 클래스에 따라 적응합니다.

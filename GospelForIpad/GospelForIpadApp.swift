@@ -14,5 +14,11 @@ struct GospelForIpadApp: App {
         Task { @MainActor in
             GospelForIpadShortcuts.updateAppShortcutParameters()
         }
+        #if DEBUG
+        // The Lectionary is first-class data — sweep all three Sunday cycles at launch.
+        Task { @MainActor in
+            LectionaryValidator.validate()
+        }
+        #endif
     }
 }
