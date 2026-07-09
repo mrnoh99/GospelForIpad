@@ -271,6 +271,22 @@ final class BiblePlayerViewModel: ObservableObject {
         playChapter(chapter, startVerse: verse)
     }
 
+    /// 본문 헤더의 ◀ ▶ 화살표: 표시 중인 장의 이전/다음 장으로 이동.
+    /// 재생 중이면 그 장을 재생하고, 아니면 선택(미리보기)만 바꾼다.
+    func stepDisplayedChapter(_ delta: Int) {
+        let base = currentPlayingChapter ?? selectedChapter
+        let target = chapter(base, offsetBy: delta)
+        if isPlaying {
+            play(target)
+            return
+        }
+        if target.gospel != selectedGospel {
+            selectedGospel = target.gospel
+        }
+        selectChapter(target)
+        AccessibilitySupport.haptic(.selection)
+    }
+
     // MARK: - Transport (forward / backward / repeat)
 
     /// Cycles the repeat mode: off → 전체반복 → 장반복 → off.

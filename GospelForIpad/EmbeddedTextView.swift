@@ -13,6 +13,7 @@ import SwiftUI
 
 struct EmbeddedTextView: View {
     @ObservedObject var player: BiblePlayerViewModel
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     /// Persisted translation selection (shared across launches).
     @AppStorage("embeddedTextTranslation") private var translationRaw = BibleTranslation.cck.rawValue
@@ -74,14 +75,27 @@ struct EmbeddedTextView: View {
     // MARK: - Header
 
     @ViewBuilder
+    /// iPhone(compact)에서는 헤더 글자를 줄인다.
+    private var titleFontSize: CGFloat { horizontalSizeClass == .regular ? 34 : 22 }
+    private var subtitleFontSize: CGFloat { horizontalSizeClass == .regular ? 20 : 15 }
+
     private func header(for chapter: BibleChapter) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 10) {
+            HStack(spacing: 8) {
+                chapterNavButton("chevron.left", label: "이전 장") {
+                    player.stepDisplayedChapter(-1)
+                }
+
                 Text(chapter.title)
-                    .font(.app(34, relativeTo: .largeTitle))
+                    .font(.app(titleFontSize, relativeTo: horizontalSizeClass == .regular ? .largeTitle : .title3))
                     .fontWeight(.bold)
                     .lineLimit(2)
                     .minimumScaleFactor(0.7)
+
+                chapterNavButton("chevron.right", label: "다음 장") {
+                    player.stepDisplayedChapter(1)
+                }
+
                 if isLive {
                     Label("재생 중", systemImage: "speaker.wave.2.fill")
                         .font(.caption.bold())
@@ -97,13 +111,25 @@ struct EmbeddedTextView: View {
             let subtitle = chapter.subtitle
             if !subtitle.isEmpty {
                 Text(subtitle)
-                    .font(.app(20, relativeTo: .title3))
+                    .font(.app(subtitleFontSize, relativeTo: .title3))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .contain)
+    }
+
+    private func chapterNavButton(_ systemName: String, label: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(Color.accentColor)
+                .frame(width: 34, height: 34)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
     }
 
     // MARK: - Font toggle
