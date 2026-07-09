@@ -63,7 +63,9 @@ enum LectionaryValidator {
                 for verse in 1...count {
                     let ms = VerseTimestamps.startMs(gospel: gospel, chapter: chapter, verse: verse)
                     if verse == 1 {
-                        assert(ms == 0, "VerseTimestamps: verse 1 of \(gospel.shortName) \(chapter) is \(ms)")
+                        // Verse 1 starts after the recorded chapter announcement (intro).
+                        assert(ms >= 0 && ms <= 40_000,
+                               "VerseTimestamps: verse 1 of \(gospel.shortName) \(chapter) at \(ms) ms is outside the intro bound")
                     }
                     assert(ms > previous, "VerseTimestamps: not increasing at \(gospel.shortName) \(chapter):\(verse)")
                     previous = ms

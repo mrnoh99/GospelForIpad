@@ -6,14 +6,15 @@ highlight, today's-reading playback start, and verse navigation. This script
 re-checks the invariants that the 2026-07-08 audio verification established.
 
 Structural checks (always run):
-  1. verse 1 of every chapter is 0
+  1. verse 1 of every chapter starts within the intro bound (0..40 s) —
+     every file opens with a recorded chapter announcement, so verse 1 > 0
   2. timestamps are strictly increasing within a chapter
   3. verse count equals the CBCK text (GospelText.json) for every chapter
 
 Audio checks (run when PyAV is installed and AudioFiles/ is present):
   4. the last verse marker lies inside the audio duration
-  5. every marker (verse >= 2) is within TOLERANCE of a speech onset that
-     follows a >= 300 ms pause (monotonic DP alignment)
+  5. every marker (verse 1 included) is within TOLERANCE of a speech onset
+     that follows a >= 300 ms pause
 
 Run:  python3 scripts/validate_verse_timestamps.py [--audio]
 Exit code 0 = all good; 1 = violations (printed).
@@ -78,7 +79,7 @@ def audio_check(book, chapter, ts, errors):
             i = j
         else:
             i += 1
-    for v, t in enumerate(ts[1:], 2):
+    for v, t in enumerate(ts, 1):
         if not any(abs(t - o) <= TOLERANCE_MS for o in onsets):
             errors.append(f"{book} {chapter}:{v} marker {t} has no speech onset within {TOLERANCE_MS} ms")
 
@@ -94,8 +95,8 @@ def main() -> int:
     for book in BOOKS:
         for ci, ts in enumerate(tables[book], 1):
             chapters += 1
-            if ts[0] != 0:
-                errors.append(f"{book} {ci}: verse 1 is {ts[0]}, expected 0")
+            if not (0 <= ts[0] <= 40000):
+                errors.append(f"{book} {ci}: verse 1 at {ts[0]} ms is outside the intro bound (0..40s)")
             if any(b <= a for a, b in zip(ts, ts[1:])):
                 errors.append(f"{book} {ci}: not strictly increasing")
             expected = max(int(v) for v in text[book][str(ci)])
