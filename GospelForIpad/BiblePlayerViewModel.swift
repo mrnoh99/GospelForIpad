@@ -253,6 +253,24 @@ final class BiblePlayerViewModel: ObservableObject {
         startPlayback(seekTo: seek)
     }
 
+    /// Jumps playback to the given 1-based verse: seeks within the chapter when
+    /// it is already playing, otherwise starts the chapter at that verse.
+    /// (본문에서 절을 터치했을 때 사용)
+    func playVerse(_ chapter: BibleChapter, verse: Int) {
+        if isPlaying, currentPlayingChapter == chapter {
+            let seconds = chapter.verseStartSeconds(verse)
+            player.seek(
+                to: CMTime(seconds: seconds, preferredTimescale: 600),
+                toleranceBefore: CMTime(seconds: 0.3, preferredTimescale: 600),
+                toleranceAfter: CMTime(seconds: 0.3, preferredTimescale: 600)
+            )
+            refreshPlaybackProgressForUI()
+            AccessibilitySupport.haptic(.selection)
+            return
+        }
+        playChapter(chapter, startVerse: verse)
+    }
+
     // MARK: - Transport (forward / backward / repeat)
 
     /// Cycles the repeat mode: off → 전체반복 → 장반복 → off.

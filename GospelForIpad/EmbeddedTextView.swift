@@ -153,7 +153,8 @@ struct EmbeddedTextView: View {
                             VerseRow(
                                 verse: item.verse,
                                 text: item.text,
-                                isCurrent: item.verse == currentVerse
+                                isCurrent: item.verse == currentVerse,
+                                onTap: { player.playVerse(chapter, verse: item.verse) }
                             )
                             .id(item.verse)
                         }
@@ -189,6 +190,7 @@ private struct VerseRow: View {
     let verse: Int
     let text: String
     let isCurrent: Bool
+    var onTap: () -> Void = {}
     @ObservedObject private var fontSettings = FontSettings.shared
 
     var body: some View {
@@ -214,8 +216,11 @@ private struct VerseRow: View {
                 .fill(isCurrent ? Color.accentColor.opacity(0.16) : Color.clear)
         )
         .contentShape(Rectangle())
+        .onTapGesture(perform: onTap)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(verse)절")
         .accessibilityValue(isCurrent ? "재생 중. \(text)" : text)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityHint("이 절부터 재생합니다")
     }
 }
