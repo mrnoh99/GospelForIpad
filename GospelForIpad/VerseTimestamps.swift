@@ -11,10 +11,12 @@ import Foundation
 // aligner models that extra narration time (KCB pericope positions, 488개).
 //
 // Provenance: 2026-07-08 full forced alignment against the actual audio —
-// pause detection (50 ms RMS frames, ≥300 ms silences), intro detection
-// (last ≥1.8 s pause with ≤6.5 s announcement speech), then sequential
-// drift-corrected snapping of every verse to a speech onset, with per-verse
-// predictions from CBCK character counts plus heading-narration allowances.
+// pause detection (50 ms RMS frames, ≥300 ms silences); intro detection by
+// expected-intro-speech matching (책·장 이름 + ChapterTitles 1절 소제목 글자수
+// × per-file speech rate — the announcer reads the verse-1 heading too);
+// then sequential drift-corrected snapping of every verse to a speech onset,
+// with per-verse predictions from CBCK character counts plus mid-chapter
+// heading-narration allowances.
 // Verified: strictly increasing, inside audio duration, verse counts match
 // GospelText.json in all 89 chapters.
 //
