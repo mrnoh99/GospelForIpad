@@ -9,9 +9,9 @@
 | 항목 | 내용 |
 |------|------|
 | 오디오 | 4복음서 89개 장, m4a(AAC). 장 단위 1파일. 출처: `ListenToGospel-Android` `audioPack` |
-| `VerseTimestamps.swift` | `[장-1][절-1]` = 절 시작 시각(ms). 1절은 항상 0 |
+| `VerseTimestamps.swift` | `[장-1][절-1]` = 절 시작 시각(ms). 1절 = 인트로 낭독 종료 지점(>0) |
 | `scripts/validate_verse_timestamps.py` | 구조 검증(기본) + 오디오 대조 검증(`--audio`) |
-| `LectionaryValidator.swift` (DEBUG) | 실행 시 표식 구조(0 시작·단조 증가·절 수 일치) 검사 |
+| `LectionaryValidator.swift` (DEBUG) | 실행 시 표식 구조(인트로 범위·단조 증가·절 수 일치) 검사 |
 
 데이터 규모: **절 표식 3,779개 / 89장** (마태 1,071 · 마르 678 · 루카 1,151 · 요한 879).
 
