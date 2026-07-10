@@ -13,6 +13,8 @@ import SwiftUI
 
 struct EmbeddedTextView: View {
     @ObservedObject var player: BiblePlayerViewModel
+    /// When set (iPhone sheet), a 닫기 button is shown in the header row.
+    var onClose: (() -> Void)? = nil
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     /// Persisted translation selection (shared across launches).
@@ -51,7 +53,9 @@ struct EmbeddedTextView: View {
             verseSection(for: chapter)
             licenseFooter
         }
-        .padding(28)
+        .padding(.horizontal, horizontalSizeClass == .regular ? 28 : 16)
+        .padding(.top, horizontalSizeClass == .regular ? 28 : 10)
+        .padding(.bottom, horizontalSizeClass == .regular ? 28 : 12)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(Color(uiColor: .systemBackground))
         .accessibilityElement(children: .contain)
@@ -105,6 +109,17 @@ struct EmbeddedTextView: View {
                 Spacer(minLength: 8)
 
                 fontMenu
+
+                if let onClose {
+                    Button("닫기", action: onClose)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(Color.accentColor)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Capsule().fill(Color.accentColor.opacity(0.14)))
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("본문 닫기")
+                }
             }
 
             let subtitle = chapter.subtitle

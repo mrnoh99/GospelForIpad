@@ -792,9 +792,8 @@ private struct ReadingSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                EmbeddedTextView(player: player)
+        VStack(spacing: 0) {
+                EmbeddedTextView(player: player, onClose: { dismiss() })
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                 Divider()
@@ -822,15 +821,8 @@ private struct ReadingSheet: View {
                 .padding(.horizontal, AppControlLayout.floatingBarHorizontalInset)
                 .padding(.top, AppControlLayout.floatingBarVerticalInset)
                 .padding(.bottom, AppControlLayout.floatingBarVerticalInset)
-            }
-            .background(.background)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("닫기") { dismiss() }
-                }
-            }
         }
+        .background(.background)
         .presentationDragIndicator(.visible)
     }
 }
