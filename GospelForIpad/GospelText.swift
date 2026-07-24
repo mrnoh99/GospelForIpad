@@ -75,7 +75,7 @@ enum GospelText {
 
     private static func store(for translation: BibleTranslation) -> [String: [String: [String: String]]] {
         if let cached = caches[translation] { return cached }
-        let loaded: [String: [String: [String: String]]]
+        var loaded: [String: [String: [String: String]]]
         if
             let url = Bundle.main.url(forResource: translation.resourceName, withExtension: "json"),
             let data = try? Data(contentsOf: url),
@@ -85,8 +85,26 @@ enum GospelText {
         } else {
             loaded = [:]
         }
+        // The 주석성경(공동번역) text carries an inline "[제목;상호참조]" section marker at the
+        // start of each pericope. Section headings are now rendered as their own rows from
+        // SectionHeadings, so strip the marker here to leave clean verse body text.
+        if translation == .kcb {
+            loaded = loaded.mapValues { chapters in
+                chapters.mapValues { verses in
+                    verses.mapValues { stripSectionMarker($0) }
+                }
+            }
+        }
         caches[translation] = loaded
         return loaded
+    }
+
+    /// Removes a leading "[제목;상호참조]" section marker (and following whitespace) from
+    /// a KCB verse, returning the clean body text.
+    private static func stripSectionMarker(_ text: String) -> String {
+        guard text.hasPrefix("["), let close = text.firstIndex(of: "]") else { return text }
+        let rest = text[text.index(after: close)...]
+        return String(rest.drop(while: { $0 == " " || $0 == "\t" }))
     }
 
     private static func key(for gospel: Bible.Gospel) -> String {

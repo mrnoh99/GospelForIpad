@@ -186,10 +186,18 @@ struct EmbeddedTextView: View {
         if verses.isEmpty {
             unavailableText
         } else {
+            let headings = Dictionary(
+                SectionHeadings.headings(gospel: chapter.gospel, chapter: chapter.number)
+                    .map { ($0.verse, $0.title) },
+                uniquingKeysWith: { first, _ in first }
+            )
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 4) {
                         ForEach(verses, id: \.verse) { item in
+                            if let title = headings[item.verse] {
+                                SectionHeadingRow(title: title)
+                            }
                             VerseRow(
                                 verse: item.verse,
                                 text: item.text,
@@ -221,6 +229,32 @@ struct EmbeddedTextView: View {
                 .foregroundStyle(.tertiary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+}
+
+// MARK: - Section heading row
+
+/// A pericope section heading (소제목) rendered as its own row above the verse it starts.
+private struct SectionHeadingRow: View {
+    let title: String
+    @ObservedObject private var fontSettings = FontSettings.shared
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            RoundedRectangle(cornerRadius: 1.5)
+                .fill(Color.accentColor)
+                .frame(width: 3, height: 18)
+            Text(title)
+                .font(.app(18, relativeTo: .headline, bold: true))
+                .foregroundStyle(Color.accentColor)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 14)
+        .padding(.top, 18)
+        .padding(.bottom, 4)
+        .accessibilityAddTraits(.isHeader)
+        .accessibilityLabel("소제목: \(title)")
     }
 }
 
