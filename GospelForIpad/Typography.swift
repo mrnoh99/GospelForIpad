@@ -8,6 +8,8 @@
 //  bundled Nanum Myeongjo (registered in Info.plist `UIAppFonts`). The Gothic
 //  option uses the system font (Apple SD Gothic Neo on Korean devices).
 //
+//  English fonts: Myeongjo uses Georgia (serif), Gothic uses San Francisco (sans-serif).
+//
 
 import SwiftUI
 import Combine
@@ -60,6 +62,17 @@ extension Font {
         switch FontSettings.shared.choice {
         case .myeongjo:
             return .custom(bold ? "NanumMyeongjoBold" : "NanumMyeongjo", size: size, relativeTo: style)
+        case .gothic:
+            return .system(size: size, weight: bold ? .bold : .regular)
+        }
+    }
+
+    /// English font coordinated with Korean font selection.
+    /// Myeongjo uses Georgia serif; Gothic uses San Francisco sans-serif.
+    static func appEnglish(_ size: CGFloat, relativeTo style: Font.TextStyle = .body, bold: Bool = false) -> Font {
+        switch FontSettings.shared.choice {
+        case .myeongjo:
+            return .custom(bold ? "Georgia-Bold" : "Georgia", size: size, relativeTo: style)
         case .gothic:
             return .system(size: size, weight: bold ? .bold : .regular)
         }
