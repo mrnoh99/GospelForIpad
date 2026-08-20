@@ -606,7 +606,7 @@ final class BibleStore {
                 guard let chapters = text.annotations[bookID] else { continue }
                 for (_, verses) in chapters {
                     for (_, annotationText) in verses {
-                        let matches = terms.allSatisfy { annotationText.localizedStandardContains($0) }
+                        let matches = terms.allSatisfy { annotationText.range(of: $0, options: [.caseInsensitive]) != nil }
                         if matches {
                             count += 1
                         }
@@ -640,7 +640,7 @@ final class BibleStore {
                     for verseNumber in verseNumbers {
                         guard let annotationText = verses[verseNumber] else { continue }
 
-                        let matches = terms.allSatisfy { annotationText.localizedStandardContains($0) }
+                        let matches = terms.allSatisfy { annotationText.range(of: $0, options: [.caseInsensitive]) != nil }
                         if matches {
                             if matched >= offset && hits.count < limit {
                                 hits.append(SearchHit(editionID: edition.id, bookID: bookID,
