@@ -23,17 +23,9 @@ struct CreditsView: View {
                 .padding(.vertical, 40)
 
                 VStack(alignment: .center, spacing: 8) {
-                    Text("Developed by")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-
-                    Text("JaiSung NOH MD")
+                    Text("by njs 2026")
                         .font(.title3)
                         .fontWeight(.semibold)
-
-                    Text("2026 Version X (build)")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity)
 
