@@ -456,8 +456,22 @@ final class BiblePlayerViewModel: ObservableObject {
             persistPlayback(from: bookmark.chapter, elapsedSeconds: CMTimeGetSeconds(bookmark.time))
         }
 
+        deactivateAudioSessionForStop()
         AccessibilitySupport.haptic(.stop)
         refreshLaunchResumeOffer()
+    }
+
+    private func deactivateAudioSessionForStop() {
+        #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
+        do {
+            let session = AVAudioSession.sharedInstance()
+            try session.setActive(false, options: .notifyOthersOnDeactivation)
+        } catch {
+            #if DEBUG
+            print("오디오 세션 비활성화 실패: \(error)")
+            #endif
+        }
+        #endif
     }
 
     /// Called when the app moves between foreground, inactive, or background while playback should continue (e.g. screen lock).
