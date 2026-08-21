@@ -1384,6 +1384,14 @@ struct AppearanceControls: View {
         @Bindable var settings = settings
         NavigationStack {
             Form {
+                Section("테마") {
+                    Picker("배경", selection: $settings.theme) {
+                        ForEach(ReaderTheme.allCases) { theme in
+                            Text(theme.label).tag(theme)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
                 Section("글자") {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("글자 크기").font(.caption).foregroundStyle(.secondary)
