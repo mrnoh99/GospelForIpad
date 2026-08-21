@@ -15,6 +15,7 @@ struct ContentView: View {
     @State private var isSleepTimerPickerPresented = false
     @State private var isReadingPresented = false
     @State private var isCreditsPresented = false
+    @State private var isSettingsPresented = false
     @ScaledMetric(relativeTo: .body) private var ipadSidebarWidth: CGFloat = 440
     @State private var controlsHeaderBottomOffset: CGFloat = 0
     @ScaledMetric(relativeTo: .body) private var chapterListRowMinHeight: CGFloat = 58
@@ -67,6 +68,9 @@ struct ContentView: View {
             .onPreferenceChange(ControlsHeaderBottomOffsetKey.self) { controlsHeaderBottomOffset = $0 }
             .sheet(isPresented: $isCreditsPresented) {
                 CreditsView()
+            }
+            .sheet(isPresented: $isSettingsPresented) {
+                AppSettingsView()
             }
     }
 
@@ -178,6 +182,16 @@ struct ContentView: View {
                 .accessibilitySortPriority(50)
 
             Spacer(minLength: 8)
+
+            Button {
+                isSettingsPresented = true
+            } label: {
+                Image(systemName: "gear")
+                    .font(.title3)
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("설정")
 
             Button {
                 isCreditsPresented = true
