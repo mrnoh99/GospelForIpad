@@ -1379,6 +1379,7 @@ struct ChapterPickerView: View {
 
 struct AppearanceControls: View {
     @Environment(ReaderSettings.self) private var settings
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         @Bindable var settings = settings
@@ -1429,6 +1430,11 @@ struct AppearanceControls: View {
             }
             .navigationTitle("보기 설정")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("닫기") { dismiss() }
+                }
+            }
         }
     }
 }
