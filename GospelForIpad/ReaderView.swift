@@ -293,13 +293,7 @@ struct ReaderPane: View {
 
     /// 한국어 성경(「성경」·「한국어 NAB」·「주석 성경」)이나 영어 성경(NABRE)은 절 앞에 소제목을 보여 준다.
     private var showsTitles: Bool {
-        if edition.id == "nabre" {
-            return true
-        }
-        if (edition.id == "knb" || edition.isAnnotated) && edition.language == "ko" {
-            return true
-        }
-        return false
+        true
     }
 
     private var titleMap: [Int: String] {
@@ -670,10 +664,7 @@ struct SpreadReader: View {
     private var spreadCount: Int { max(1, Int(ceil(Double(pages.count) / 2.0))) }
 
     private var showsTitles: Bool {
-        if edition.id == "nabre" {
-            return true
-        }
-        return edition.id == "knb" || edition.isAnnotated
+        true
     }
 
     private var titleMap: [Int: String] {
