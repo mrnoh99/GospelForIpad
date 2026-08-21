@@ -14,6 +14,7 @@ struct ContentView: View {
     @ObservedObject private var fontSettings = FontSettings.shared
     @State private var isSleepTimerPickerPresented = false
     @State private var isReadingPresented = false
+    @State private var isCreditsPresented = false
     @ScaledMetric(relativeTo: .body) private var ipadSidebarWidth: CGFloat = 440
     @State private var controlsHeaderBottomOffset: CGFloat = 0
     @ScaledMetric(relativeTo: .body) private var chapterListRowMinHeight: CGFloat = 58
@@ -64,6 +65,9 @@ struct ContentView: View {
                 reassertPlayback: { player.reassertAudioPlaybackIfNeeded() }
             ))
             .onPreferenceChange(ControlsHeaderBottomOffsetKey.self) { controlsHeaderBottomOffset = $0 }
+            .sheet(isPresented: $isCreditsPresented) {
+                CreditsView()
+            }
     }
 
     /// On iPad (regular width) the browsing column sits beside the synchronized
@@ -174,6 +178,16 @@ struct ContentView: View {
                 .accessibilitySortPriority(50)
 
             Spacer(minLength: 8)
+
+            Button {
+                isCreditsPresented = true
+            } label: {
+                Image(systemName: "info.circle")
+                    .font(.title3)
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("정보")
 
             if horizontalSizeClass != .regular {
                 readingButton
