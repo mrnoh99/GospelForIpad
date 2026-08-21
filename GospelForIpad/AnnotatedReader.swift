@@ -236,7 +236,8 @@ struct AnnotatedReader: View {
                     Divider()
                     AnnotationsPane(notes: notes, xrefs: xrefs,
                                     emptyHint: emptyNotesHint, bookID: book.id, wide: true,
-                                    searchQuery: navigation.searchQuery)
+                                    searchQuery: navigation.searchQuery,
+                                    selectedAnnotationNumber: navigation.selectedAnnotationNumber)
                         .frame(maxWidth: .infinity)
                 }
             } else {
@@ -246,7 +247,8 @@ struct AnnotatedReader: View {
                         Divider().padding(.vertical, 16)
                         AnnotationsPane(notes: notes, xrefs: xrefs,
                                         emptyHint: emptyNotesHint, bookID: book.id,
-                                        searchQuery: navigation.searchQuery)
+                                        searchQuery: navigation.searchQuery,
+                                        selectedAnnotationNumber: navigation.selectedAnnotationNumber)
                     }
                     .frame(maxWidth: 720, alignment: .leading)
                     .padding(.horizontal, 28).padding(.bottom, 40)
@@ -534,6 +536,7 @@ struct AnnotationsPane: View {
     var bookID: String = ""
     var wide: Bool = false
     var searchQuery: String = ""
+    var selectedAnnotationNumber: String? = nil
     @State private var tab = 0        // 0=주석, 1=상호참조
     @Environment(ReaderSettings.self) private var settings
 
@@ -552,24 +555,48 @@ struct AnnotationsPane: View {
                           notes: tab == 1 ? xrefs : notes,
                           emptyHint: tab == 1 ? "이 장에는 상호참조가 없습니다." : emptyHint,
                           bookID: bookID,
-                          searchQuery: searchQuery)
+                          searchQuery: searchQuery,
+                          selectedAnnotationNumber: selectedAnnotationNumber)
             } else {
                 NotesList(title: "주석", notes: notes, emptyHint: emptyHint, bookID: bookID,
-                          searchQuery: searchQuery)
+                          searchQuery: searchQuery,
+                          selectedAnnotationNumber: selectedAnnotationNumber)
             }
         }
     }
 
     var body: some View {
         if wide {
-            ScrollView {
-                inner
-                    .padding(.horizontal, 22).padding(.vertical, 24)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+            ScrollViewReader { proxy in
+                ScrollView {
+                    inner
+                        .padding(.horizontal, 22).padding(.vertical, 24)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .background(settings.theme.background)
+                .onChange(of: selectedAnnotationNumber) { _, newNumber in
+                    if let number = newNumber {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            withAnimation {
+                                proxy.scrollTo("annotation-\(number)", anchor: .top)
+                            }
+                        }
+                    }
+                }
             }
-            .background(settings.theme.background)
         } else {
-            inner
+            ScrollViewReader { proxy in
+                inner
+                    .onChange(of: selectedAnnotationNumber) { _, newNumber in
+                        if let number = newNumber {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                withAnimation {
+                                    proxy.scrollTo("annotation-\(number)", anchor: .top)
+                                }
+                            }
+                        }
+                    }
+            }
         }
     }
 }
@@ -584,6 +611,7 @@ struct NotesList: View {
     /// 각주 마커 링크를 위해 필요
     var chapter: Int = 0
     var searchQuery: String = ""
+    var selectedAnnotationNumber: String? = nil
     @Environment(ReaderSettings.self) private var settings
     @Environment(\.openURL) private var openURL
 
@@ -623,6 +651,7 @@ struct NotesList: View {
                                            onOpenURL: { openURL($0) })
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
+                    .id("annotation-\(note.n)")
                 }
             }
         }
