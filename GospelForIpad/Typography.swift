@@ -34,6 +34,8 @@ enum FontChoice: String, CaseIterable, Identifiable {
     }
 
     var toggled: FontChoice { self == .myeongjo ? .gothic : .myeongjo }
+
+    var opposite: FontChoice { self == .myeongjo ? .gothic : .myeongjo }
 }
 
 enum EnglishFontChoice: String, CaseIterable, Identifiable {

@@ -1398,7 +1398,10 @@ struct AppearanceControls: View {
                         Slider(value: $settings.lineSpacingFactor, in: 0.35...1.1)
                     }
                     Picker("서체", selection: $settings.fontChoice) {
-                        ForEach(FontChoice.allCases) { choice in Text(choice.label).tag(choice) }
+                        ForEach(FontChoice.allCases) { choice in
+                            let displayLabel = choice == settings.fontChoice ? choice.label : choice.opposite.label
+                            Text(displayLabel).tag(choice)
+                        }
                     }
                     .pickerStyle(.segmented)
                     Toggle("절 번호 표시", isOn: $settings.showVerseNumbers)
