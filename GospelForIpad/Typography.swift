@@ -13,8 +13,8 @@ import SwiftUI
 import Combine
 
 enum FontChoice: String, CaseIterable, Identifiable {
-    case myeongjo
     case gothic
+    case myeongjo
 
     var id: String { rawValue }
 
