@@ -14,7 +14,7 @@ struct CreditsView: View {
                 VStack(spacing: 12) {
                     Image(systemName: "book.fill")
                         .font(.system(size: 48))
-                        .foregroundStyle(.accentColor)
+                        .tint(.accentColor)
 
                     Text("복음서듣기")
                         .font(.title)
@@ -40,7 +40,8 @@ struct CreditsView: View {
             }
             .padding(32)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(.background.ignoresSafeArea())
+            .background(.background)
+            .ignoresSafeArea()
             .navigationTitle("정보")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
