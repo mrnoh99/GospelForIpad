@@ -30,7 +30,7 @@ struct TodayGospelView: View {
         let f = DateFormatter()
         f.locale = Locale(identifier: "ko_KR")
         f.timeZone = LDate.calendar.timeZone
-        f.dateFormat = "yy년 M월 d일"
+        f.dateFormat = "yy년M월d일"
         return f
     }()
 
