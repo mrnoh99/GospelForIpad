@@ -159,6 +159,86 @@ enum Lectionary {
         return nil
     }
 
+    /// Returns the feast/solemnity name for the given date if one exists, otherwise nil.
+    static func feastDayName(_ date: Date) -> String? {
+        let year = LDate.year(date)
+        let md = LDate.month(date) * 100 + LDate.day(date)
+        let isSunday = LDate.dayOfWeek(date) == sunday
+        let saintFeastMDs: [Int] = [125, 503, 514, 703, 1028, 1130] // Saint feasts that yield to Sunday
+
+        // Fixed-date solemnities & feasts
+        if !(saintFeastMDs.contains(md) && isSunday) {
+            switch md {
+            case 101:  return "천주의 성모 마리아 대축일"
+            case 125:  return "성 바오로 사도의 회심 축일"
+            case 202:  return "주님 봉헌 축일"
+            case 222:  return "성 베드로 사도좌 축일"
+            case 319:  return "성 요셉 대축일"
+            case 325:  return "주님 탄생 예고 대축일"
+            case 425:  return "성 마르코 복음사가 축일"
+            case 503:  return "성 필립보와 성 야고보 사도 축일"
+            case 514:  return "성 마티아 사도 축일"
+            case 624:  return "성 요한 세례자 탄생 대축일"
+            case 629:  return "성 베드로와 성 바오로 사도 대축일"
+            case 703:  return "성 토마스 사도 축일"
+            case 806:  return "주님의 거룩한 변모 축일"
+            case 815:  return "성모 승천 대축일"
+            case 824:  return "성 바르톨로메오 사도 축일"
+            case 914:  return "성 십자가 현양 축일"
+            case 921:  return "성 마태오 사도 복음사가 축일"
+            case 1018: return "성 루카 복음사가 축일"
+            case 1028: return "성 시몬과 성 유다 사도 축일"
+            case 1101: return "모든 성인 대축일"
+            case 1102: return "죽은 모든 이를 기억하는 위령의 날"
+            case 1109: return "라테라노 대성전 봉헌 축일"
+            case 1130: return "성 안드레아 사도 축일"
+            case 1208: return "원죄 없이 잉태되신 복되신 동정 마리아 대축일"
+            case 1225: return "주님 성탄 대축일"
+            case 1226: return "성 스테파노 첫 순교자 축일"
+            case 1227: return "성 요한 사도 복음사가 축일"
+            case 1228: return "죄 없는 아기 순교자들 축일"
+            default: break
+            }
+        }
+
+        // Movable solemnities & feasts
+        let easter = LiturgicalCalendar.easterDate(year)
+        let ashWednesday = LDate.addDays(easter, -46)
+        let ascension = LDate.addDays(easter, 42)
+        let pentecost = LDate.addDays(easter, 49)
+        let trinity = LDate.addDays(easter, 56)
+        let corpusChristi = LDate.addDays(easter, 63)
+        let sacredHeart = LDate.addDays(easter, 68)
+
+        if date == LDate.addDays(easter, -7) { return "주님 수난 성지 주일" }
+        if date == LDate.addDays(easter, -3) { return "주님 만찬 성목요일" }
+        if date == LDate.addDays(easter, -2) { return "주님 수난 성금요일" }
+        if date == LDate.addDays(easter, -1) { return "성토요일" }
+        if date == easter { return "주님 부활 대축일" }
+        if date == ascension { return "주님 승천 대축일" }
+        if date == pentecost { return "성령 강림 대축일" }
+        if date == trinity { return "삼위일체 대축일" }
+        if date == corpusChristi { return "성체 성혈 대축일" }
+        if date == sacredHeart { return "예수 성심 대축일" }
+
+        // Epiphany (Korea)
+        if LDate.month(date) == 1, (2...8).contains(LDate.day(date)), isSunday {
+            return "주님 공현 대축일"
+        }
+        // Baptism of the Lord
+        if date == LDate.next(LDate.make(year, 1, 6), weekday: sunday) {
+            return "주님 세례 축일"
+        }
+        // Holy Family
+        let dec25 = LDate.make(year, 12, 25)
+        let holyFamily = LDate.dayOfWeek(dec25) == sunday ? LDate.make(year, 12, 30) : LDate.next(dec25, weekday: sunday)
+        if date == holyFamily {
+            return "예수, 마리아, 요셉의 성가정 축일"
+        }
+
+        return nil
+    }
+
     // MARK: - Advent
 
     private static func adventGospel(_ pos: LiturgicalPosition) -> (Bible.Gospel, Int, Int, Int)? {

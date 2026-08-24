@@ -21,7 +21,7 @@ struct TodayGospelView: View {
     }
 
     private var liturgicalName: String {
-        LiturgicalCalendar.liturgicalDayName(viewedDate)
+        Lectionary.feastDayName(viewedDate) ?? LiturgicalCalendar.liturgicalDayName(viewedDate)
     }
 
     private var isToday: Bool { viewedDate == LDate.today() }
