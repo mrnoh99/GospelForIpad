@@ -152,7 +152,7 @@ struct EmbeddedTextView: View {
         Button {
             fontSettings.toggle()
         } label: {
-            Text(fontSettings.choice.opposite.shortLabel)
+            Text(fontSettings.choice.shortLabel)
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(Color.accentColor)
                 .padding(.horizontal, 12)
@@ -161,8 +161,8 @@ struct EmbeddedTextView: View {
                 .contentShape(Capsule())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("글꼴: \(fontSettings.choice.label)")
-        .accessibilityHint("탭하면 글꼴을 바꿉니다")
+        .accessibilityLabel("글꼴: \(fontSettings.choice.label) (탭하면 \(fontSettings.choice.opposite.label)로 변경)")
+        .accessibilityHint("글꼴을 바꿉니다")
     }
 
     // MARK: - Translation tab
