@@ -30,12 +30,13 @@ struct TodayGospelView: View {
         let f = DateFormatter()
         f.locale = Locale(identifier: "ko_KR")
         f.timeZone = LDate.calendar.timeZone
-        f.dateFormat = "yyyy년 M월 d일 (E)"
+        f.dateFormat = "yy년 M월 d일"
         return f
     }()
 
     private var dateLabel: String {
-        Self.dateFormatter.string(from: viewedDate)
+        let dateStr = Self.dateFormatter.string(from: viewedDate)
+        return "\(dateStr) \(liturgicalName)"
     }
 
     var body: some View {
