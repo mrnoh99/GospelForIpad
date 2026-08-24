@@ -152,7 +152,7 @@ struct EmbeddedTextView: View {
         Button {
             fontSettings.toggle()
         } label: {
-            Text(fontSettings.choice.shortLabel)
+            Text(fontSettings.choice.opposite.shortLabel)
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(Color.accentColor)
                 .padding(.horizontal, 12)
