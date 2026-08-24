@@ -149,20 +149,16 @@ struct EmbeddedTextView: View {
     // MARK: - Font toggle
 
     private var fontMenu: some View {
-        Button {
-            fontSettings.toggle()
-        } label: {
-            Text(fontSettings.choice.shortLabel)
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(Color.accentColor)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 5)
-                .background(Capsule().fill(Color.accentColor.opacity(0.14)))
-                .contentShape(Capsule())
+        Picker("한글 서체", selection: $fontSettings.choice) {
+            ForEach(FontChoice.allCases) { choice in
+                Text(choice.shortLabel)
+                    .font(choice.font(size: 15))
+                    .tag(choice)
+            }
         }
-        .buttonStyle(.plain)
-        .accessibilityLabel("글꼴: \(fontSettings.choice.label) (탭하면 \(fontSettings.choice.opposite.label)로 변경)")
-        .accessibilityHint("글꼴을 바꿉니다")
+        .pickerStyle(.segmented)
+        .frame(maxWidth: 100)
+        .accessibilityLabel("한글 글꼴 선택")
     }
 
     // MARK: - Translation tab
