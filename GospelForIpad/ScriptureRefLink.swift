@@ -1,14 +1,20 @@
+// DISABLED: Unused CatholicBible infrastructure (not referenced in GospelForIpad)
+// This file depends on CatholicBible types and functionality not defined in GospelForIpad
 //
-//  ScriptureRefLink.swift
-//  CatholicBible
+// //
+// //  ScriptureRefLink.swift
+// //  CatholicBible
+// //
+// //  주석·상호참조 본문에 나오는 성경 인용(예: "Gn 2:1", "Ps 33:7",
+// //  "1 Cor 7:11", "Col 1:16–17", 이어지는 "33:6")을 탭 가능한 링크로 바꾸고,
+// //  탭하면 그 구절을 골라 놓은 판본으로 미리 보여 준다(RefPreviewSheet).
+// //
 //
-//  주석·상호참조 본문에 나오는 성경 인용(예: "Gn 2:1", "Ps 33:7",
-//  "1 Cor 7:11", "Col 1:16–17", 이어지는 "33:6")을 탭 가능한 링크로 바꾸고,
-//  탭하면 그 구절을 골라 놓은 판본으로 미리 보여 준다(RefPreviewSheet).
-//
+// import SwiftUI
+// import UIKit
 
-import SwiftUI
-import UIKit
+/*
+DISABLED - see comment at top of file
 
 // MARK: - 인용 파서
 
@@ -627,3 +633,4 @@ struct RefPreviewSheet: View {
         .presentationDragIndicator(.visible)   // 드래그로 위치·크기 변경
     }
 }
+*/

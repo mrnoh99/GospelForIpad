@@ -1,14 +1,21 @@
+// DISABLED: Unused CatholicBible infrastructure (GospelForIpad uses EmbeddedTextView instead)
+// This file contains code that depends on CatholicBible types not defined in GospelForIpad
+// (ReadingState, ReaderNavigation, KnbNotesStore, Edition, Introduction, IntroLevel, etc.)
 //
-//  AnnotatedReader.swift
-//  CatholicBible
+// //
+// //  AnnotatedReader.swift
+// //  CatholicBible
+// //
+// //  주석 성경(knbnotes) 전용 리더: 왼쪽에 본문(주석 마커 포함), 오른쪽에 주석.
+// //  '입문(Introduction)'도 같은 방식(본문 + 주석)으로 본다.
+// //  넓은 화면(iPad)은 좌·우 나란히, 좁은 화면(iPhone)은 본문 아래 주석.
+// //
 //
-//  주석 성경(knbnotes) 전용 리더: 왼쪽에 본문(주석 마커 포함), 오른쪽에 주석.
-//  '입문(Introduction)'도 같은 방식(본문 + 주석)으로 본다.
-//  넓은 화면(iPad)은 좌·우 나란히, 좁은 화면(iPhone)은 본문 아래 주석.
-//
+// import SwiftUI
+// import UIKit
 
-import SwiftUI
-import UIKit
+/*
+DISABLED - see comment at top of file
 
 struct AnnotatedReader: View {
     @Binding var editionID: String
@@ -850,3 +857,4 @@ struct IntroDetailView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
+*/

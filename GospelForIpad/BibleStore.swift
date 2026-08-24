@@ -1,14 +1,23 @@
+// DISABLED: Unused CatholicBible infrastructure (GospelForIpad uses GospelText instead)
+// This file depends on CatholicBible types not defined in GospelForIpad
+// (Edition, SearchMode, Editions, LiturgyStore, etc.)
 //
-//  BibleStore.swift
-//  CatholicBible
+// GospelForIpad gets Gospel text via GospelText.swift instead, not BibleStore.
 //
-//  번들된 판본별 본문 파일(Resources/BibleText_<판본id>.json)을 로드해
-//  절 단위로 제공한다. 아직 수집되지 않은 판본/책은 빈 상태로 노출되어
-//  서재·리더가 안내 문구를 대신 보여 준다 (scripts/fetch_cbck_bible.py 참고).
+// //
+// //  BibleStore.swift
+// //  CatholicBible
+// //
+// //  번들된 판본별 본문 파일(Resources/BibleText_<판본id>.json)을 로드해
+// //  절 단위로 제공한다. 아직 수집되지 않은 판본/책은 빈 상태로 노출되어
+// //  서재·리더가 안내 문구를 대신 보여 준다 (scripts/fetch_cbck_bible.py 참고).
+// //
 //
+// import Foundation
+// import Observation
 
-import Foundation
-import Observation
+/*
+DISABLED - see comment at top of file
 
 /// BibleText_<판본>.json 파일 구조
 private nonisolated struct BibleTextFile: Decodable, Sendable {
@@ -701,3 +710,4 @@ final class BibleStore {
         Editions.all.filter { editions[$0.id] != nil }
     }
 }
+*/

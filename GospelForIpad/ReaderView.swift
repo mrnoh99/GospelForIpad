@@ -1,15 +1,22 @@
+// DISABLED: Unused CatholicBible infrastructure (GospelForIpad uses EmbeddedTextView instead)
+// This file contains code that depends on CatholicBible types not defined in GospelForIpad
+// (Edition, ReadingState, ReaderNavigation, KnbNotesStore, LiturgyStore, etc.)
 //
-//  ReaderView.swift
-//  CatholicBible
+// //
+// //  ReaderView.swift
+// //  CatholicBible
+// //
+// //  ebook 리더. iPad(가로 넓은 화면)에서는 두 개의 독립된 열을 나란히 보여 준다.
+// //  각 열은 판본·책·장을 따로 고를 수 있어, 같은 성경을 서로 다른 곳에 펼치거나
+// //  다른 성경을 나란히 볼 수 있다. iPhone에서는 한 열만 보여 준다.
+// //  절마다 판본 공통 책갈피·노트를 달 수 있다.
+// //
 //
-//  ebook 리더. iPad(가로 넓은 화면)에서는 두 개의 독립된 열을 나란히 보여 준다.
-//  각 열은 판본·책·장을 따로 고를 수 있어, 같은 성경을 서로 다른 곳에 펼치거나
-//  다른 성경을 나란히 볼 수 있다. iPhone에서는 한 열만 보여 준다.
-//  절마다 판본 공통 책갈피·노트를 달 수 있다.
-//
+// import SwiftUI
+// import UIKit
 
-import SwiftUI
-import UIKit
+/*
+DISABLED - see comment at top of file
 
 /// 노트 편집 시트 대상 (절 + 참고 본문)
 private struct NoteTarget: Identifiable {
@@ -1432,3 +1439,4 @@ struct AppearanceControls: View {
         }
     }
 }
+*/
