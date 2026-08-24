@@ -201,6 +201,7 @@ struct EmbeddedTextView: View {
                             VerseRow(
                                 verse: item.verse,
                                 text: item.text,
+                                translation: translation,
                                 isCurrent: item.verse == currentVerse,
                                 onTap: { player.playVerse(chapter, verse: item.verse) }
                             )
@@ -263,9 +264,11 @@ private struct SectionHeadingRow: View {
 private struct VerseRow: View {
     let verse: Int
     let text: String
+    let translation: BibleTranslation
     let isCurrent: Bool
     var onTap: () -> Void = {}
     @ObservedObject private var fontSettings = FontSettings.shared
+    @Environment(ReaderSettings.self) private var readerSettings
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
@@ -276,7 +279,7 @@ private struct VerseRow: View {
                 .frame(minWidth: 30, alignment: .trailing)
 
             Text(text.isEmpty ? "—" : text)
-                .font(.app(20, relativeTo: .title3))
+                .font(verseFont)
                 .lineSpacing(4)
                 .foregroundStyle(Color.primary.opacity(isCurrent ? 1 : 0.85))
                 .fixedSize(horizontal: false, vertical: true)
@@ -296,5 +299,13 @@ private struct VerseRow: View {
         .accessibilityValue(isCurrent ? "재생 중. \(text)" : text)
         .accessibilityAddTraits(.isButton)
         .accessibilityHint("이 절부터 재생합니다")
+    }
+
+    private var verseFont: Font {
+        if translation == .nab {
+            return readerSettings.bodyEnglishFont(bold: false)
+        } else {
+            return .app(20, relativeTo: .title3)
+        }
     }
 }
