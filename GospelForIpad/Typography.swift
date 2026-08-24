@@ -114,3 +114,27 @@ extension Font {
         }
     }
 }
+
+extension FontChoice {
+    /// Create a Font for this font choice.
+    func font(size: CGFloat, bold: Bool = false) -> Font {
+        switch self {
+        case .myeongjo:
+            return .custom(bold ? "NanumMyeongjoBold" : "NanumMyeongjo", size: size)
+        case .gothic:
+            return .system(size: size, weight: bold ? .bold : .regular)
+        }
+    }
+}
+
+extension EnglishFontChoice {
+    /// Create a Font for this English font choice.
+    func font(size: CGFloat, bold: Bool = false) -> Font {
+        switch self {
+        case .georgia:
+            return .custom(bold ? "Georgia-Bold" : "Georgia", size: size)
+        case .sanfrancisco:
+            return .system(size: size, weight: bold ? .bold : .regular)
+        }
+    }
+}
