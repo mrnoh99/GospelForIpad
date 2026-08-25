@@ -303,7 +303,7 @@ struct ReaderPane: View {
         true
     }
 
-    private var titleMap: [Int: String] {
+    private var titleMap: [String: String] {
         guard showsTitles, chapter > 0 else { return [:] }
 
         if edition.id == "nabre" {
@@ -474,7 +474,7 @@ struct ReaderPane: View {
                         LazyVStack(alignment: .leading, spacing: settings.lineSpacing * 0.9) {
                             ForEach(verses) { verse in
                                 VStack(alignment: .leading, spacing: settings.lineSpacing * 0.9) {
-                                    if let title = titleMap[verse.number] {
+                                    if let title = titleMap[String(verse.number)] {
                                         SectionTitleView(text: title, bookID: book.id, chapter: chapter,
                                                          linkable: edition.id == "knbnotes" || edition.id == "nabre")
                                     }
@@ -674,7 +674,7 @@ struct SpreadReader: View {
         true
     }
 
-    private var titleMap: [Int: String] {
+    private var titleMap: [String: String] {
         guard showsTitles, chapter > 0 else { return [:] }
 
         if edition.id == "nabre" {
@@ -847,7 +847,7 @@ struct SpreadReader: View {
             if isFirst { chapterHeader }
             if let verses {
                 ForEach(verses) { verse in
-                    if let title = titleMap[verse.number] {
+                    if let title = titleMap[String(verse.number)] {
                         SectionTitleView(text: title, bookID: book.id, chapter: chapter,
                                                          linkable: edition.id == "knbnotes")
                     }
