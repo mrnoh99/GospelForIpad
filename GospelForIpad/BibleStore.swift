@@ -651,11 +651,13 @@ final class BibleStore {
             outer: for bookID in order {
                 guard let chapters = text.annotations[bookID] else { continue }
                 let chapterNumbers = chapters.keys.sorted()
-                for chapterNumber in chapterNumbers {
-                    guard let verses = chapters[chapterNumber] else { continue }
+                for chapterKey in chapterNumbers {
+                    guard let verses = chapters[chapterKey] else { continue }
+                    guard let chapterNumber = Int(chapterKey) else { continue }
                     let verseNumbers = verses.keys.sorted()
-                    for verseNumber in verseNumbers {
-                        guard let annotationText = verses[verseNumber] else { continue }
+                    for verseKey in verseNumbers {
+                        guard let annotationText = verses[verseKey] else { continue }
+                        guard let verseNumber = Int(verseKey) else { continue }
 
                         let matches = terms.allSatisfy { annotationText.range(of: $0, options: [.caseInsensitive]) != nil }
                         if matches {
