@@ -55,10 +55,10 @@ nonisolated struct Verse: Identifiable, Hashable, Sendable {
 }
 
 nonisolated struct SectionTitle: Identifiable, Hashable, Sendable {
-    let verse: Int
+    let verse: String
     let text: String
 
-    var id: Int { verse }
+    var id: String { verse }
 }
 
 nonisolated struct SearchHit: Identifiable, Hashable, Sendable {
@@ -81,9 +81,9 @@ nonisolated struct EditionText: Sendable {
     /// 검색용 원본
     var rawBooks: [String: [String: [String: String]]]
     /// 주석 데이터 (책 id → 장 → 절 → 주석 텍스트)
-    var annotations: [String: [Int: [Int: String]]] = [:]
+    var annotations: [String: [String: [String: String]]] = [:]
     /// 소제목 데이터 (책 id → 장 → 절 → 제목 텍스트)
-    var titles: [String: [Int: [Int: String]]] = [:]
+    var titles: [String: [String: [String: String]]] = [:]
 }
 
 @Observable
@@ -233,27 +233,24 @@ final class BibleStore {
     /// NAB 같이 titles 파일이 없는 판본에서 verse 데이터를 분석해 제목 추출
     private static nonisolated func extractTitlesFromVerses(
         _ books: [String: [String: [String: String]]]
-    ) -> [String: [Int: [Int: String]]] {
-        var result: [String: [Int: [Int: String]]] = [:]
+    ) -> [String: [String: [String: String]]] {
+        var result: [String: [String: [String: String]]] = [:]
 
         for (bookID, chapters) in books {
-            var bookTitles: [Int: [Int: String]] = [:]
+            var bookTitles: [String: [String: String]] = [:]
 
             for (chapterKey, verses) in chapters {
-                guard let chapterNumber = Int(chapterKey) else { continue }
-                var chapterTitles: [Int: String] = [:]
+                var chapterTitles: [String: String] = [:]
 
                 for (verseKey, verseText) in verses {
-                    guard let verseNumber = Int(verseKey) else { continue }
-
                     // 제목 판별 기준
                     if Self.isLikelyTitle(verseText) {
-                        chapterTitles[verseNumber] = verseText
+                        chapterTitles[verseKey] = verseText
                     }
                 }
 
                 if !chapterTitles.isEmpty {
-                    bookTitles[chapterNumber] = chapterTitles
+                    bookTitles[chapterKey] = chapterTitles
                 }
             }
 
@@ -345,10 +342,21 @@ final class BibleStore {
     /// 장의 소제목 목록 (절 번호 순서로)
     func titles(edition: Edition, book: BibleBook, chapter: Int) -> [SectionTitle] {
         guard let bookTitles = editions[edition.id]?.titles[book.id],
-              let chapterTitles = bookTitles[chapter] else { return [] }
+              let chapterTitles = bookTitles[String(chapter)] else { return [] }
         return chapterTitles
             .map { SectionTitle(verse: $0.key, text: $0.value) }
-            .sorted { $0.verse < $1.verse }
+            .sorted { compareVerseKeys($0.verse, $1.verse) }
+    }
+
+    private func compareVerseKeys(_ a: String, _ b: String) -> Bool {
+        if let aNum = Int(a), let bNum = Int(b) {
+            return aNum < bNum
+        }
+        if let aBase = Int(a.split(separator: "(").first.map(String.init) ?? a),
+           let bBase = Int(b.split(separator: "(").first.map(String.init) ?? b) {
+            if aBase != bBase { return aBase < bBase }
+        }
+        return a < b
     }
 
     // MARK: - 검색 (현재 판본 안에서)
