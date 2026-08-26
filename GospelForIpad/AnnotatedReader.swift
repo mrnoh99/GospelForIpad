@@ -1,21 +1,14 @@
-// DISABLED: Unused CatholicBible infrastructure (GospelForIpad uses EmbeddedTextView instead)
-// This file contains code that depends on CatholicBible types not defined in GospelForIpad
-// (ReadingState, ReaderNavigation, KnbNotesStore, Edition, Introduction, IntroLevel, etc.)
 //
-// //
-// //  AnnotatedReader.swift
-// //  CatholicBible
-// //
-// //  주석 성경(knbnotes) 전용 리더: 왼쪽에 본문(주석 마커 포함), 오른쪽에 주석.
-// //  '입문(Introduction)'도 같은 방식(본문 + 주석)으로 본다.
-// //  넓은 화면(iPad)은 좌·우 나란히, 좁은 화면(iPhone)은 본문 아래 주석.
-// //
+//  AnnotatedReader.swift
+//  CatholicBible
 //
-// import SwiftUI
-// import UIKit
+//  주석 성경(knbnotes) 전용 리더: 왼쪽에 본문(주석 마커 포함), 오른쪽에 주석.
+//  '입문(Introduction)'도 같은 방식(본문 + 주석)으로 본다.
+//  넓은 화면(iPad)은 좌·우 나란히, 좁은 화면(iPhone)은 본문 아래 주석.
+//
 
-/*
-DISABLED - see comment at top of file
+import SwiftUI
+import UIKit
 
 struct AnnotatedReader: View {
     @Binding var editionID: String
@@ -48,6 +41,9 @@ struct AnnotatedReader: View {
     @State private var xrefTarget: XrefTarget?
     /// 각주 마커 팝업 대상
     @State private var noteTarget: MarkerNoteTarget?
+    /// 제목 맵 캐시
+    @State private var cachedTitleMap: [String: String] = [:]
+    @State private var cachedTitleMapChapter: Int = -1
     /// 부모(ReaderView 등)가 설치한 각주 마커 처리 액션에 위임하기 위해 보관
     @Environment(\.openURL) private var parentOpenURL
 
@@ -242,9 +238,8 @@ struct AnnotatedReader: View {
                     textColumn(verses)
                     Divider()
                     AnnotationsPane(notes: notes, xrefs: xrefs,
-                                    emptyHint: emptyNotesHint, bookID: book.id, wide: true,
-                                    searchQuery: navigation.searchQuery,
-                                    selectedAnnotationNumber: navigation.selectedAnnotationNumber)
+                                    emptyHint: emptyNotesHint, bookID: book.id, chapter: chapter, wide: true,
+                                    searchQuery: navigation.searchQuery, editionID: editionID)
                         .frame(maxWidth: .infinity)
                 }
             } else {
@@ -253,9 +248,8 @@ struct AnnotatedReader: View {
                         versesBlock(verses)
                         Divider().padding(.vertical, 16)
                         AnnotationsPane(notes: notes, xrefs: xrefs,
-                                        emptyHint: emptyNotesHint, bookID: book.id,
-                                        searchQuery: navigation.searchQuery,
-                                        selectedAnnotationNumber: navigation.selectedAnnotationNumber)
+                                        emptyHint: emptyNotesHint, bookID: book.id, chapter: chapter,
+                                        searchQuery: navigation.searchQuery, editionID: editionID)
                     }
                     .frame(maxWidth: 720, alignment: .leading)
                     .padding(.horizontal, 28).padding(.bottom, 40)
@@ -288,9 +282,9 @@ struct AnnotatedReader: View {
 
     /// 대기 이동 직후 강조 시작 절로 한 번 스크롤(레이아웃 뒤로 미룸). 한 번 하면 지운다.
     private func performScroll(_ proxy: ScrollViewProxy, verses: [Verse]) {
-        guard let n = scrollTarget, verses.contains(where: { $0.number == n }) else { return }
+        guard let n = scrollTarget, verses.contains(where: { $0.number == String(n) }) else { return }
         DispatchQueue.main.async {
-            withAnimation(.easeInOut(duration: 0.25)) { proxy.scrollTo(n, anchor: .center) }
+            withAnimation(.easeInOut(duration: 0.25)) { proxy.scrollTo(String(n), anchor: .center) }
             scrollTarget = nil
         }
     }
@@ -301,11 +295,22 @@ struct AnnotatedReader: View {
         if verses.isEmpty {
             MissingTextView(edition: edition, book: book).padding(.top, 32)
         } else {
-            let titleMap = getTitleMap()
+            let titleMap: [String: String] = {
+                if cachedTitleMapChapter == chapter {
+                    return cachedTitleMap
+                } else {
+                    let map = getTitleMap()
+                    DispatchQueue.main.async {
+                        cachedTitleMap = map
+                        cachedTitleMapChapter = chapter
+                    }
+                    return map
+                }
+            }()
             LazyVStack(alignment: .leading, spacing: settings.lineSpacing * 0.9) {
                 ForEach(verses) { verse in
                     VStack(alignment: .leading, spacing: settings.lineSpacing * 0.9) {
-                        if let title = titleMap[verse.number] {
+                        if let title = titleMap[String(verse.number)] {
                             SectionTitleView(text: title, bookID: book.id, chapter: chapter,
                                              linkable: true, searchQuery: navigation.searchQuery)
                         }
@@ -322,12 +327,16 @@ struct AnnotatedReader: View {
         }
     }
 
-    private func getTitleMap() -> [Int: String] {
+    private func getTitleMap() -> [String: String] {
         let ch = max(chapter, 1)
 
-        // 주석성경(knbnotes)에서 소제목을 가져온다
-        let titleMap = knb.titlesByVerse(edition: "knbnotes", bookID: book.id, chapter: ch)
-            .mapValues { AnnotationMarkup.stripMarkers($0) }
+        var titleMap: [String: String] = [:]
+
+        // JSON headings 필드에서 로드
+        let storeTitle = store.titles(edition: edition, book: book, chapter: ch)
+        for title in storeTitle {
+            titleMap[title.verse] = title.text
+        }
 
         return titleMap
     }
@@ -390,7 +399,7 @@ struct SectionTitleView: View {
                     currentBook: bookID,
                     chapter: chapter,
                     font: titleFont,
-                    color: UIColor(.blue),
+                    color: UIColor(settings.theme.headingText),
                     linkColor: UIColor(Color.accentColor),
                     lineSpacing: settings.lineSpacing,
                     searchQuery: searchQuery,
@@ -399,21 +408,22 @@ struct SectionTitleView: View {
             } else {
                 // 단순 텍스트
                 Text(text)
-                    .font(.system(size: settings.fontSize * 1.05, weight: .semibold, design: .default))
-                    .foregroundStyle(.blue)
+                    .font(.system(size: settings.fontSize * 1.15, weight: .semibold, design: .default))
+                    .foregroundStyle(settings.theme.headingText)
                     .textSelection(.enabled)
                     .lineLimit(nil)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.vertical, max(4, settings.lineSpacing * 0.5))
+        .padding(.top, max(14, settings.lineSpacing * 1.3))
+        .padding(.bottom, max(10, settings.lineSpacing * 0.9))
     }
 
     private var titleFont: UIFont {
-        let size = settings.fontSize * 1.05
+        let size = settings.fontSize * 1.15
         switch settings.fontChoice {
         case .myeongjo:
-            return UIFont(name: "NanumMyeongjo", size: size) ?? .systemFont(ofSize: size)
+            return UIFont(name: "NanumMyeongjo", size: size) ?? .systemFont(ofSize: size, weight: .semibold)
         case .gothic:
             return .systemFont(ofSize: size, weight: .semibold)
         }
@@ -545,6 +555,7 @@ struct AnnotationsPane: View {
     let xrefs: [ChapterNote]
     let emptyHint: String
     var bookID: String = ""
+    var chapter: Int = 0
     var wide: Bool = false
     var searchQuery: String = ""
     var selectedAnnotationNumber: String? = nil
@@ -567,11 +578,13 @@ struct AnnotationsPane: View {
                           notes: tab == 1 ? xrefs : notes,
                           emptyHint: tab == 1 ? "이 장에는 상호참조가 없습니다." : emptyHint,
                           bookID: bookID,
+                          chapter: chapter,
                           searchQuery: searchQuery,
                           selectedAnnotationNumber: selectedAnnotationNumber,
                           editionID: editionID)
             } else {
                 NotesList(title: "주석", notes: notes, emptyHint: emptyHint, bookID: bookID,
+                          chapter: chapter,
                           searchQuery: searchQuery,
                           selectedAnnotationNumber: selectedAnnotationNumber,
                           editionID: editionID)
@@ -638,6 +651,8 @@ struct NotesList: View {
             switch settings.englishFontChoice {
             case .georgia: return UIFont(name: "Georgia", size: size) ?? .systemFont(ofSize: size)
             case .sanfrancisco: return .systemFont(ofSize: size)
+            case .palatino: return UIFont(name: "Palatino", size: size) ?? UIFont(name: "Palatino Linotype", size: size) ?? .systemFont(ofSize: size)
+            case .charter: return UIFont(name: "Charter", size: size) ?? UIFont(name: "Bitstream Charter", size: size) ?? .systemFont(ofSize: size)
             }
         } else {
             switch settings.fontChoice {
@@ -666,7 +681,8 @@ struct NotesList: View {
                             .foregroundStyle(Color.accentColor)
                             .frame(minWidth: settings.fontSize * 1.3, alignment: .trailing)
                         // 단어 선택(네이티브)과 성경 인용 링크 탭을 함께 지원.
-                        SelectableNoteText(text: note.text, currentBook: bookID, chapter: chapter,
+                        let normalizedText = ScriptureRefNormalizer.normalize(note.text, currentBookID: bookID, chapter: chapter)
+                        SelectableNoteText(text: normalizedText, currentBook: bookID, chapter: chapter,
                                            font: noteUIFont,
                                            color: UIColor(settings.theme.text),
                                            linkColor: UIColor(Color.accentColor),
@@ -794,36 +810,47 @@ struct IntroDetailView: View {
     }
 
     var body: some View {
-        ZStack {
-            if wide {
-                wideLayout
-            } else {
-                narrowLayout
-            }
-        }
-        .background(settings.theme.background.ignoresSafeArea())
-        .navigationTitle(intro.title.isEmpty ? "입문" : intro.title)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItemGroup(placement: .topBarTrailing) {
-                if !intro.notes.isEmpty {
-                    Button(action: { showNotes.toggle() }) {
-                        Image(systemName: showNotes ? "eye" : "eye.slash")
-                            .accessibilityLabel(showNotes ? "주석 숨기기" : "주석 보이기")
-                    }
+        NavigationStack {
+            ZStack {
+                if wide {
+                    wideLayout
+                } else {
+                    narrowLayout
                 }
-                Button("닫기") { dismiss() }
             }
-        }
-        .preferredColorScheme(settings.theme.colorScheme)
-        .environment(\.openURL, OpenURLAction { url in handleURL(url); return .handled })
-        .fullScreenCover(item: $xrefTarget) { t in
-            RefPreviewSheet(target: t)
-                .environment(store)
-                .environment(settings)
-                .environment(annotations)
-                .environment(navigation)
-                .environment(knb)
+            .background(settings.theme.background.ignoresSafeArea())
+            .navigationTitle(intro.title.isEmpty ? "입문" : intro.title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    HStack(spacing: 2) {
+                        Button("입문") {
+                            showNotes = false
+                        }
+                        .buttonStyle(.bordered)
+                        .foregroundColor(showNotes ? .gray : .accentColor)
+
+                        Button("입문+주석") {
+                            showNotes = true
+                        }
+                        .buttonStyle(.bordered)
+                        .foregroundColor(showNotes ? .accentColor : .gray)
+                    }
+                    .font(.caption)
+
+                    Button("닫기") { dismiss() }
+                }
+            }
+            .preferredColorScheme(settings.theme.colorScheme)
+            .environment(\.openURL, OpenURLAction { url in handleURL(url); return .handled })
+            .fullScreenCover(item: $xrefTarget) { t in
+                RefPreviewSheet(target: t)
+                    .environment(store)
+                    .environment(settings)
+                    .environment(annotations)
+                    .environment(navigation)
+                    .environment(knb)
+            }
         }
     }
 
@@ -843,9 +870,9 @@ struct IntroDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 bodyText
-                if showNotes && !intro.notes.isEmpty {
+                if showNotes {
                     Divider().padding(.vertical, 16)
-                    NotesList(title: "주석", notes: intro.notes, emptyHint: "", editionID: editionID)
+                    NotesList(title: "주석", notes: intro.notes, emptyHint: "이 입문에는 주석이 없습니다.", editionID: editionID)
                 }
             }
             .padding(.horizontal, 24).padding(.vertical, 20)
@@ -862,7 +889,17 @@ struct IntroDetailView: View {
     }
 
     private var bodyText: some View {
-        SelectableNoteText(text: intro.body.isEmpty ? "본문이 비어 있습니다." : intro.body,
+        let displayText: String
+        if intro.body.isEmpty {
+            displayText = "본문이 비어 있습니다."
+        } else {
+            // Introduction body도 성경 참조 정규화 (chapter 정보 없으므로 0 전달)
+            displayText = ScriptureRefNormalizer.normalize(intro.body,
+                                                           currentBookID: intro.bookID ?? "",
+                                                           chapter: 0)
+        }
+
+        return SelectableNoteText(text: displayText,
                            currentBook: intro.bookID,
                            font: bodyUIFont,
                            color: UIColor(settings.theme.text),
@@ -872,4 +909,3 @@ struct IntroDetailView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
-*/
