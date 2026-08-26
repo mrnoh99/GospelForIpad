@@ -1,20 +1,14 @@
-// DISABLED: Unused CatholicBible infrastructure (not referenced in GospelForIpad)
-// This file depends on CatholicBible types and functionality not defined in GospelForIpad
 //
-// //
-// //  ScriptureRefLink.swift
-// //  CatholicBible
-// //
-// //  주석·상호참조 본문에 나오는 성경 인용(예: "Gn 2:1", "Ps 33:7",
-// //  "1 Cor 7:11", "Col 1:16–17", 이어지는 "33:6")을 탭 가능한 링크로 바꾸고,
-// //  탭하면 그 구절을 골라 놓은 판본으로 미리 보여 준다(RefPreviewSheet).
-// //
+//  ScriptureRefLink.swift
+//  CatholicBible
 //
-// import SwiftUI
-// import UIKit
+//  주석·상호참조 본문에 나오는 성경 인용(예: "Gn 2:1", "Ps 33:7",
+//  "1 Cor 7:11", "Col 1:16–17", 이어지는 "33:6")을 탭 가능한 링크로 바꾸고,
+//  탭하면 그 구절을 골라 놓은 판본으로 미리 보여 준다(RefPreviewSheet).
+//
 
-/*
-DISABLED - see comment at top of file
+import SwiftUI
+import UIKit
 
 // MARK: - 인용 파서
 
@@ -132,9 +126,10 @@ enum ScriptureRef {
     /// 한글 성경 참조 정규식: "책이름 장,절" 또는 "장,절" (점으로 구분된 절 범위 포함)
     /// 괄호 뒤 대시/점도 범위로 인식: "(민수 6,9)-11" → "민수 6,9-11", "(민수 31,8).16" → "민수 31,8-16"
     /// 스페이스 포함 책 이름 지원: "열왕 상", "역대 하", "고린도 전서" 등
+    /// 절 다음의 조사 인식: "5절의", "5절에", "5절에서" 등
     /// 그룹: 1=책이름(선택적, 1-3 숫자 접두사 포함) 2=장 3=절 4=대시뒤 첫 수 5=대시뒤 둘째 수 6=점뒤 절 7=점뒤 대시 절
     private static let koreanRegex = try? NSRegularExpression(
-        pattern: "([1-3]?[가-힣]+(?:\\s[가-힣]+)*(?:복음|서간|기|편)?)?\\s*(\\d{1,3})[:,](\\d{1,3})(?:\\)?[–-](\\d{1,3})(?:[:,](\\d{1,3}))?)?(?:\\)?\\.(\\d{1,3})(?:[–-](\\d{1,3}))?)?")
+        pattern: "([1-3]?[가-힣]+(?:\\s[가-힣]+)*(?:복음|서간|기|편)?)?\\s*(\\d{1,3})[:,](\\d{1,3})절(?:[의에서가에]*)?(?:\\)?[–-](\\d{1,3})절(?:[의에서가에]*)?(?:[:,](\\d{1,3}))?)?(?:\\)?\\.(\\d{1,3})절(?:[의에서가에]*)?(?:[–-](\\d{1,3})절(?:[의에서가에]*)?)?)?")
 
     /// text → 인용을 링크로 바꾼 AttributedString.
     /// currentBook: 책약어 없는 "33:6" 이 이을 기준 책(그 장의 책 id).
@@ -547,11 +542,13 @@ struct RefPreviewSheet: View {
             let lo = ch == target.chapter ? target.verse : 1
             let hi = ch == endChapter ? endVerse : Int.max
             var first = true
-            for v in store.verses(edition: edition, book: book, chapter: ch)
-                where v.number >= lo && v.number <= hi {
-                out.append(RangeVerse(chapter: ch, verse: v, newChapter: multi && first))
-                first = false
-                if out.count >= cap { break }
+            for v in store.verses(edition: edition, book: book, chapter: ch) {
+                let verseNum = Int(v.number) ?? Int(v.number.split(separator: "(").first ?? "") ?? Int.max
+                if verseNum >= lo && verseNum <= hi {
+                    out.append(RangeVerse(chapter: ch, verse: v, newChapter: multi && first))
+                    first = false
+                    if out.count >= cap { break }
+                }
             }
             ch += 1
         }
@@ -580,7 +577,7 @@ struct RefPreviewSheet: View {
                             VerseRowView(edition: edition, book: book,
                                          chapter: item.chapter, verse: item.verse,
                                          highlighted: item.chapter == target.chapter
-                                             && item.verse.number == target.verse,
+                                             && item.verse.number == String(target.verse),
                                          onOpenNote: { ref, text in
                                              noteTarget = RefNoteTarget(ref: ref, text: text)
                                          },
@@ -621,7 +618,7 @@ struct RefPreviewSheet: View {
                     func q(_ k: String) -> String? { items.first { $0.name == k }?.value }
                     if let n = q("n"), let book, let text = knb.notes(edition: editionID, bookID: book.id, chapter: target.chapter)
                         .first(where: { $0.n == n })?.text {
-                        noteTarget = RefNoteTarget(ref: VerseRef(bookID: book.id, chapter: target.chapter, verse: target.verse), text: text)
+                        noteTarget = RefNoteTarget(ref: VerseRef(bookID: book.id, chapter: target.chapter, verse: String(target.verse)), text: text)
                     }
                     return .handled
                 }
@@ -633,4 +630,3 @@ struct RefPreviewSheet: View {
         .presentationDragIndicator(.visible)   // 드래그로 위치·크기 변경
     }
 }
-*/
