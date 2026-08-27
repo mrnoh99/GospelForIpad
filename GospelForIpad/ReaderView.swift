@@ -66,12 +66,12 @@ struct ReaderView: View {
             ZStack {
                 settings.theme.background.ignoresSafeArea()
                 if showAnnotated {
-                    // 주석 성경: 왼쪽 본문 · 오른쪽 주석 (입문 접근 포함)
-                    AnnotatedReader(editionID: $rs.selectedEditionID,
-                                    bookID: primaryBookBinding,
-                                    ownerBookID: book.id,
-                                    showHeader: true,
-                                    onOpenNote: openNote)
+                    // AnnotatedReader removed - GospelForIpad uses GospelText.swift for text rendering
+                    ReaderPane(role: .primary,
+                               editionID: $rs.selectedEditionID,
+                               bookID: primaryBookBinding,
+                               layout: layout,
+                               onOpenNote: openNote)
                 } else {
                     switch layout {
                     case .single:
