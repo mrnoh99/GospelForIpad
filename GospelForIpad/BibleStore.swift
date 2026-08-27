@@ -703,4 +703,3 @@ final class BibleStore {
         Editions.all.filter { editions[$0.id] != nil }
     }
 }
-*/
