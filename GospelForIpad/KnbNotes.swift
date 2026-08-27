@@ -98,7 +98,7 @@ enum ScriptureRefNormalizer {
                 let refWords = refToCheck.split(separator: " ", maxSplits: 1).map { String($0) }
                 if !refWords.isEmpty {
                     let firstWord = refWords[0]
-                    if let foundBook = Bible.books.first(where: { $0.abbrev == firstWord || $0.searchKeywords.contains(firstWord) }) {
+                    if let foundBook = Bible.books.first(where: { $0.abbrev == firstWord }) {
                         // 약자를 찾았으므로 책 이름을 사용하되, 약자는 유지
                         finalBook = foundBook.name
                         finalRef = ref  // 약자를 포함한 원본 ref 유지
@@ -114,8 +114,8 @@ enum ScriptureRefNormalizer {
                 let refWords = finalRef.split(separator: " ").map { String($0) }
                 if !refWords.isEmpty {
                     let firstWord = refWords[0]
-                    // 참조의 첫 단어가 어떤 책의 약자나 검색 키워드와 일치하면 중복으로 판단
-                    if Bible.books.contains(where: { $0.abbrev == firstWord || $0.searchKeywords.contains(firstWord) }) {
+                    // 참조의 첫 단어가 어떤 책의 약자와 일치하면 중복으로 판단
+                    if Bible.books.contains(where: { $0.abbrev == firstWord }) {
                         shouldIncludeBook = false
                     }
 
@@ -126,9 +126,9 @@ enum ScriptureRefNormalizer {
                             let potentialBookRef = refWords[i...].joined(separator: " ")
                             let currentWord = refWords[i]
 
-                            // 약자 또는 searchKeywords 확인
+                            // 약자 확인
                             if let foundBook = Bible.books.first(where: {
-                                $0.abbrev == currentWord || $0.searchKeywords.contains(currentWord)
+                                $0.abbrev == currentWord
                             }) {
                                 finalRef = potentialBookRef
                                 shouldIncludeBook = false
@@ -302,13 +302,11 @@ enum ScriptureRefNormalizer {
 
             // 책 이름이나 약자로 시작하는지 확인 (이미 명시된 참조는 건너뛰기)
             var startsWithBook = false
-            var bookPrefix = ""
 
             // 책 이름 확인
             for book in Bible.books {
                 if innerContent.hasPrefix(book.name) {
                     startsWithBook = true
-                    bookPrefix = book.name
                     break
                 }
             }
@@ -321,7 +319,6 @@ enum ScriptureRefNormalizer {
                         let afterAbbrev = String(innerContent.dropFirst(book.abbrev.count))
                         if afterAbbrev.isEmpty || afterAbbrev.first?.isWhitespace ?? false {
                             startsWithBook = true
-                            bookPrefix = book.abbrev
                             break
                         }
                     }
@@ -506,20 +503,6 @@ enum ScriptureRefNormalizer {
             }
         }
 
-        // searchKeywords로 확인 (예: "히브리서" → "히브리인들에게 보낸 서간")
-        for book in Bible.books {
-            for keyword in book.searchKeywords {
-                if searchStr.hasPrefix(keyword) {
-                    // 키워드가 참조의 일부가 아닌지 확인 (예: "히브" in "히브리"가 아닌지)
-                    let afterKeyword = String(searchStr.dropFirst(keyword.count))
-                    if afterKeyword.isEmpty || afterKeyword.first?.isWhitespace ?? false || afterKeyword.first?.isNumber ?? false {
-                        let trimmed = afterKeyword.trimmingCharacters(in: .whitespaces)
-                        return (book.name, trimmed)
-                    }
-                }
-            }
-        }
-
         // 책 이름이 없으면 참조는 숫자로 시작하거나 장만 있어야 함
         // (예: "2,4-23", "38─39", "74,14-17", "104")
         return (nil, ref)
@@ -588,7 +571,7 @@ enum ScriptureRefNormalizer {
 
             if let (book, ref) = tryParseReference(trimmed) {
                 // 책 이름
-                var bookAttr = AttributedString(book)
+                let bookAttr = AttributedString(book)
                 result += bookAttr
                 result += AttributedString(" ")
 
