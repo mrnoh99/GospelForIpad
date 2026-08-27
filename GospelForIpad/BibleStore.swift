@@ -1,52 +1,7 @@
-// DISABLED: Unused CatholicBible infrastructure (GospelForIpad uses GospelText instead)
-// This file depends on CatholicBible types not defined in GospelForIpad
-// (Edition, SearchMode, Editions, LiturgyStore, etc.)
-//
-// GospelForIpad gets Gospel text via GospelText.swift instead, not BibleStore.
-//
-// //
-// //  BibleStore.swift
-// //  CatholicBible
-// //
-// //  번들된 판본별 본문 파일(Resources/BibleText_<판본id>.json)을 로드해
-// //  절 단위로 제공한다. 아직 수집되지 않은 판본/책은 빈 상태로 노출되어
-// //  서재·리더가 안내 문구를 대신 보여 준다 (scripts/fetch_cbck_bible.py 참고).
-// //
-//
-// import Foundation
-// import Observation
+import Foundation
+import Observation
 
-/*
-DISABLED - see comment at top of file
-
-/// BibleText_<판본>.json 파일 구조
-private nonisolated struct BibleTextFile: Decodable, Sendable {
-    let translation: String
-    let source: String
-    /// 판본 고유의 책 표시 이름 (예: 공동번역 "출애굽기", NAB "Genesis")
-    let bookNames: [String: String]?
-    /// 책 id → 장 번호(문자열) → 절 번호(문자열) → 본문
-    let books: [String: [String: [String: String]]]
-    /// 소제목 데이터 (책 id → 장 번호(문자열) → 절 번호(문자열) → 제목)
-    let headings: [String: [String: [String: String]]]?
-}
-
-/// 주석 JSON 파일 구조
-private nonisolated struct AnnotationFile: Decodable, Sendable {
-    struct Annotation: Decodable, Sendable {
-        let n: String  // 절 번호
-        let text: String  // 주석 내용
-    }
-
-    struct Title: Decodable, Sendable {
-        let v: Int  // 절 번호
-        let text: String  // 제목 텍스트
-    }
-
-    let annotations: [String: [String: [Annotation]]]?  // 책 id → 장 → [주석]
-    let titles: [String: [String: [Title]]]?  // 책 id → 장 → [제목]
-}
-
+// Core types used by AnnotatedReader and other views
 nonisolated struct Verse: Identifiable, Hashable, Sendable {
     let number: Int
     let text: String
@@ -84,6 +39,34 @@ nonisolated struct EditionText: Sendable {
     var annotations: [String: [String: [String: String]]] = [:]
     /// 소제목 데이터 (책 id → 장 → 절 → 제목 텍스트)
     var titles: [String: [String: [String: String]]] = [:]
+}
+
+/// BibleText_<판본>.json 파일 구조
+private nonisolated struct BibleTextFile: Decodable, Sendable {
+    let translation: String
+    let source: String
+    /// 판본 고유의 책 표시 이름
+    let bookNames: [String: String]?
+    /// 책 id → 장 번호(문자열) → 절 번호(문자열) → 본문
+    let books: [String: [String: [String: String]]]
+    /// 소제목 데이터
+    let headings: [String: [String: [String: String]]]?
+}
+
+/// 주석 JSON 파일 구조
+private nonisolated struct AnnotationFile: Decodable, Sendable {
+    struct Annotation: Decodable, Sendable {
+        let n: String  // 절 번호
+        let text: String  // 주석 내용
+    }
+
+    struct Title: Decodable, Sendable {
+        let v: Int  // 절 번호
+        let text: String  // 제목 텍스트
+    }
+
+    let annotations: [String: [String: [Annotation]]]?  // 책 id → 장 → [주석]
+    let titles: [String: [String: [Title]]]?  // 책 id → 장 → [제목]
 }
 
 @Observable
