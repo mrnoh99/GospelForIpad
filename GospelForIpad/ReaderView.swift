@@ -48,7 +48,7 @@ struct ReaderView: View {
     /// 두 판본 비교에서 두 열이 공유하는 장(연동 시 양쪽이 같은 장을 본다).
     @State private var compareChapter = 0
     /// 연동 비교에서 두 열이 맞추는 '맨 위 절'.
-    @State private var compareTopVerse: Int?
+    @State private var compareTopVerse: String?
 
     private var canDual: Bool { hSize == .regular }
     /// 좁은 화면(iPhone)에서는 항상 한 페이지
@@ -277,7 +277,7 @@ struct ReaderPane: View {
     /// 사라지는 옛 리더가 대기 이동을 가로채지 않도록 목표 책과 대조한다.
     var ownerBookID: String = ""
     /// 연동 비교에서 두 열이 맞추는 '맨 위 절'. nil이면 스크롤 연동 안 함(각 열 독립).
-    var syncVerse: Binding<Int?>? = nil
+    var syncVerse: Binding<String?>? = nil
     let onOpenNote: (VerseRef, String) -> Void
 
     @Environment(BibleStore.self) private var store
@@ -290,7 +290,7 @@ struct ReaderPane: View {
     /// 대기 이동 직후 한 번 스크롤할 절(강조 색은 navigation.activeHighlight가 담당).
     @State private var scrollTarget: Int?
     /// 지금 맨 위에 보이는 절(연동 스크롤 공유용으로 읽는다).
-    @State private var topVerse: Int?
+    @State private var topVerse: String?
     @State private var showBookPicker = false
     /// ReaderPane 초기화 완료 후 책 선택 변경만 감지하기 위한 플래그
     @State private var isInitialized = false
