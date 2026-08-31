@@ -167,6 +167,17 @@ struct ReaderView: View {
     private func injectShared<V: View>(_ view: V) -> some View {
         view.injectSharedStores(store, settings, readingState, annotations, knbNotes, liturgy)
             .environment(navigation)
+            .environment(\.openURL, OpenURLAction { url in
+                guard url.scheme == "catholicbible", url.host == "note" else { return .systemAction }
+                let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
+                func q(_ k: String) -> String? { items.first { $0.name == k }?.value }
+                if let b = q("b"), let cs = q("c"), let c = Int(cs), let n = q("n") {
+                    let note = knbNotes.notes(edition: readingState.selectedEditionID,
+                                              bookID: b, chapter: c).first { $0.n == n }
+                    markerNote = MarkerNoteTarget(n: n, text: note?.text ?? "이 주석을 찾지 못했습니다.", bookID: b, chapter: c)
+                }
+                return .handled
+            })
     }
 
     /// 첫째 열의 책은 사이드바 선택(navigation)과 연동된다.
