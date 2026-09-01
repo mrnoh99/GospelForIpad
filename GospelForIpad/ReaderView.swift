@@ -1011,9 +1011,11 @@ struct SelectableVerseText: UIViewRepresentable {
         // 마크다운 링크([텍스트](URL)) 처리
         for link in markdownLinks {
             if let url = URL(string: link.urlString) {
-                var linkAttrs: [NSAttributedString.Key: Any] = [.link: url]
-                linkAttrs[.foregroundColor] = color
-                attr.addAttributes(linkAttrs, range: link.range)
+                if link.range.location >= 0 && link.range.location + link.range.length <= attr.length {
+                    var linkAttrs: [NSAttributedString.Key: Any] = [.link: url]
+                    linkAttrs[.foregroundColor] = color
+                    attr.addAttributes(linkAttrs, range: link.range)
+                }
             }
         }
 
@@ -1022,16 +1024,18 @@ struct SelectableVerseText: UIViewRepresentable {
             let ns = processedText as NSString
             let markerFont = font.withSize(max(font.pointSize * 0.72, 9))
             for m in regex.matches(in: processedText, range: NSRange(location: 0, length: ns.length)) {
-                let n = ns.substring(with: m.range(at: 1))
-                var attrs: [NSAttributedString.Key: Any] = [
-                    .foregroundColor: markerColor,
-                    .font: markerFont,
-                    .baselineOffset: font.pointSize * 0.28,
-                ]
-                if let url = URL(string: "gospelForipad://note?b=\(bookID)&c=\(chapter)&n=\(n)") {
-                    attrs[.link] = url
+                if m.range.location >= 0 && m.range.location + m.range.length <= attr.length {
+                    let n = ns.substring(with: m.range(at: 1))
+                    var attrs: [NSAttributedString.Key: Any] = [
+                        .foregroundColor: markerColor,
+                        .font: markerFont,
+                        .baselineOffset: font.pointSize * 0.28,
+                    ]
+                    if let url = URL(string: "gospelForipad://note?b=\(bookID)&c=\(chapter)&n=\(n)") {
+                        attrs[.link] = url
+                    }
+                    attr.addAttributes(attrs, range: m.range)
                 }
-                attr.addAttributes(attrs, range: m.range)
             }
             tv.linkTextAttributes = [.foregroundColor: markerColor]
         }
