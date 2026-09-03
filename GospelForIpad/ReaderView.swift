@@ -298,6 +298,8 @@ struct ReaderPane: View {
     @Environment(KnbNotesStore.self) private var knbNotes
 
     @State private var localChapter = 0
+    /// 원본 헤딩 데이터 (Sirach 프롤로그용, BibleStore의 정제 로직 우회)
+    @State private var rawHeadings: [String: [String: [String: String]]] = [:]
     /// 대기 이동 직후 한 번 스크롤할 절(강조 색은 navigation.activeHighlight가 담당).
     @State private var scrollTarget: Int?
     /// 지금 맨 위에 보이는 절(연동 스크롤 공유용으로 읽는다).
@@ -340,11 +342,13 @@ struct ReaderPane: View {
         return titles
     }
 
-    /// 프롤로그 텍스트 (Sirach ch1 같은 특수 장에서만 표시)
+    /// 원본 헤딩 데이터에서 프롤로그 추출 (BibleStore의 정제 로직 우회)
     private var prologueText: String? {
         guard chapter == 1 && book.id == "sir" else { return nil }
-        guard let text = titleMap["1"] else { return nil }
-        return isPrologueText(text) ? text : nil
+        let sirHeadings = rawHeadings["sir"] ?? [:]
+        guard let headingsForCh1 = sirHeadings["1"] else { return nil }
+        guard let rawText = headingsForCh1["1"] else { return nil }
+        return isPrologueText(rawText) ? rawText : nil
     }
 
     /// 프롤로그 텍스트 여부 (verse markers like (1), (5), (10)... 포함)
@@ -380,6 +384,7 @@ struct ReaderPane: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onAppear {
+            loadRawHeadings()
             initChapterIfNeeded()
             isInitialized = true
         }
@@ -415,6 +420,16 @@ struct ReaderPane: View {
     }
 
     // MARK: 시작/이동 위치
+
+    private func loadRawHeadings() {
+        guard rawHeadings.isEmpty else { return }
+        if let headingsURL = Bundle.main.url(forResource: "KnbHeadings_ko", withExtension: "json"),
+           let headingsData = try? Data(contentsOf: headingsURL) {
+            if let decoded = try? JSONDecoder().decode([String: [String: [String: String]]].self, from: headingsData) {
+                rawHeadings = decoded
+            }
+        }
+    }
 
     private func initChapterIfNeeded() {
         // 연동된 둘째 열: 장은 첫째 열을 따라가되, 강조 독서로의 첫 스크롤은 스스로 한다
