@@ -298,8 +298,6 @@ struct ReaderPane: View {
     @Environment(KnbNotesStore.self) private var knbNotes
 
     @State private var localChapter = 0
-    /// 원본 헤딩 데이터 (Sirach 프롤로그용, BibleStore의 정제 로직 우회)
-    @State private var rawHeadings: [String: [String: [String: String]]] = [:]
     /// 대기 이동 직후 한 번 스크롤할 절(강조 색은 navigation.activeHighlight가 담당).
     @State private var scrollTarget: Int?
     /// 지금 맨 위에 보이는 절(연동 스크롤 공유용으로 읽는다).
@@ -342,31 +340,6 @@ struct ReaderPane: View {
         return titles
     }
 
-    /// 원본 헤딩 데이터에서 프롤로그 추출 (BibleStore의 정제 로직 우회)
-    private var prologueText: String? {
-        guard chapter == 1 && book.id == "sir" else { return nil }
-        let sirHeadings = rawHeadings["sir"] ?? [:]
-        guard let headingsForCh1 = sirHeadings["1"] else { return nil }
-        guard let rawText = headingsForCh1["1"] else { return nil }
-        return isPrologueText(rawText) ? rawText : nil
-    }
-
-    /// 프롤로그 텍스트 여부 (verse markers like (1), (5), (10)... 포함)
-    private func isPrologueText(_ text: String) -> Bool {
-        let verseMarkerPattern = try? NSRegularExpression(pattern: "\\(\\d+\\)", options: [])
-        guard let regex = verseMarkerPattern else { return false }
-        let range = NSRange(text.startIndex..., in: text)
-        return regex.firstMatch(in: text, range: range) != nil
-    }
-
-    /// verse 1의 제목이 프롤로그일 경우 제외하고 반환
-    private func filteredTitleMap() -> [String: String] {
-        var result = titleMap
-        if chapter == 1 && book.id == "sir" && prologueText != nil {
-            result.removeValue(forKey: "1")
-        }
-        return result
-    }
 
     /// 표시 중인 장. 연동 시 공유 장, 아니면 이 열의 자기 장.
     private var chapter: Int { linkedChapter?.wrappedValue ?? localChapter }
@@ -384,7 +357,6 @@ struct ReaderPane: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onAppear {
-            loadRawHeadings()
             initChapterIfNeeded()
             isInitialized = true
         }
@@ -420,19 +392,6 @@ struct ReaderPane: View {
     }
 
     // MARK: 시작/이동 위치
-
-    private func loadRawHeadings() {
-        guard rawHeadings.isEmpty else { return }
-        if let headingsURL = Bundle.main.url(forResource: "KnbHeadings_ko", withExtension: "json"),
-           let headingsData = try? Data(contentsOf: headingsURL) {
-            struct HeadingsFile: Decodable {
-                let headings: [String: [String: [String: String]]]
-            }
-            if let file = try? JSONDecoder().decode(HeadingsFile.self, from: headingsData) {
-                rawHeadings = file.headings
-            }
-        }
-    }
 
     private func initChapterIfNeeded() {
         // 연동된 둘째 열: 장은 첫째 열을 따라가되, 강조 독서로의 첫 스크롤은 스스로 한다
@@ -517,7 +476,6 @@ struct ReaderPane: View {
 
     private var versesScroll: some View {
         let verses = chapter > 0 ? store.verses(edition: edition, book: book, chapter: chapter) : []
-        let filteredTitles = filteredTitleMap()
         return ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
@@ -526,13 +484,9 @@ struct ReaderPane: View {
                         MissingTextView(edition: edition, book: book).padding(.top, 40)
                     } else {
                         LazyVStack(alignment: .leading, spacing: settings.lineSpacing * 0.9) {
-                            if let prologue = prologueText {
-                                prologueView(text: prologue)
-                                    .padding(.bottom, 16)
-                            }
                             ForEach(verses) { verse in
                                 VStack(alignment: .leading, spacing: settings.lineSpacing * 0.9) {
-                                    if let title = filteredTitles[String(verse.number)] {
+                                    if let title = titleMap[String(verse.number)] {
                                         SectionTitleView(text: title, bookID: book.id, chapter: chapter,
                                                          linkable: edition.id == "knbnotes" || edition.id == "nabre")
                                     }
@@ -599,19 +553,6 @@ struct ReaderPane: View {
             .foregroundStyle(settings.theme.secondary.opacity(0.8))
             .frame(maxWidth: .infinity, alignment: .center)
             .padding(.top, 40)
-    }
-
-    private func prologueView(text: String) -> some View {
-        Text(text)
-            .font(settings.fontChoice.font(size: settings.fontSize, relativeTo: .body))
-            .lineSpacing(settings.lineSpacing * 0.5)
-            .foregroundStyle(settings.theme.text)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.leading, 8)
-            .padding(.vertical, 12)
-            .overlay(alignment: .leading) {
-                Rectangle().fill(Color.accentColor.opacity(0.3)).frame(width: 3)
-            }
     }
 
     private func parseBookSelection(_ picked: String) {
