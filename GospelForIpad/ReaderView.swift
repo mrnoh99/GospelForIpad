@@ -795,6 +795,13 @@ struct SpreadReader: View {
         chapter = n
     }
 
+    private func refreshCache() {
+        guard chapter <= 0 else { return }
+        let validChapter = readingState.lastChapter(edition: edition, book: book)
+        chapter = validChapter
+        spreadIndex = 0
+    }
+
     private var atFirst: Bool { spreadIndex == 0 && chapter <= 1 }
     private var atLast: Bool { spreadIndex >= spreadCount - 1 && chapter >= book.chapterCount }
 
@@ -811,6 +818,14 @@ struct SpreadReader: View {
                 chip(store.bookShortName(edition: edition, book: book))
             }
             Spacer(minLength: 0)
+            Button { refreshCache() } label: {
+                Image(systemName: "arrow.clockwise")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .accessibilityLabel("새로고침")
         }
         .font(.subheadline)
         .padding(.horizontal, 16).padding(.vertical, 8)
