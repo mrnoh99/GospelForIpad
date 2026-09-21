@@ -15,6 +15,20 @@ struct BibleBook: Identifiable, Hashable, Sendable {
     let chapterCount: Int
 
     func chapterLabel(_ chapter: Int) -> String { "\(chapter)장" }
+
+    /// Spellings a book may appear under in KNB note cross-references, e.g.
+    /// `마태` · `마태오` · `마태오복음` · `마태오복음서` all resolve to Matthew.
+    /// Sorted longest first so prefix matching prefers the most specific form.
+    var searchKeywords: [String] {
+        // "마태오 복음" → "마태오복음" → "마태오복음서" (= Gospel.koreanName)
+        let compactName = name.replacingOccurrences(of: " ", with: "")
+        let candidates = [name, shortName, abbrev, id, compactName, compactName + "서"]
+
+        var seen = Set<String>()
+        return candidates
+            .filter { !$0.isEmpty && seen.insert($0).inserted }
+            .sorted { $0.count > $1.count }
+    }
 }
 
 struct Bible {
