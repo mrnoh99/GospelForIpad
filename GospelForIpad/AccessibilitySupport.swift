@@ -7,7 +7,6 @@ import Foundation
 import SwiftUI
 #if canImport(UIKit)
 import UIKit
-import AudioToolbox
 #endif
 
 /// Shared label typography for gospel grid, header title, sleep timer, and playback.
@@ -102,25 +101,21 @@ enum AccessibilitySupport {
         return "\(secs)초"
     }
 
+    /// Haptic-only feedback. Deliberately silent: feedback generators no-op on
+    /// hardware without a Taptic Engine (every iPad), whereas the actuation IDs
+    /// 1519/1520 passed to `AudioServicesPlaySystemSound` fall back to an
+    /// audible system sound there, so playback would end with a beep.
     static func haptic(_ kind: Haptic) {
         #if os(iOS)
         switch kind {
         case .play:
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            // 재생 시작 소리
-            AudioServicesPlaySystemSound(1519) // 시스템 재생 소리
         case .stop:
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-            // 정지 소리
-            AudioServicesPlaySystemSound(1520) // 시스템 정지 소리
         case .chapterChange:
             UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
-            // 챕터 변경 소리
-            AudioServicesPlaySystemSound(1519)
         case .selection:
             UISelectionFeedbackGenerator().selectionChanged()
-            // 선택/버튼 누름 소리
-            AudioServicesPlaySystemSound(1519) // 시스템 버튼 소리
         }
         #endif
     }

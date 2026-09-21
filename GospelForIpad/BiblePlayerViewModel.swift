@@ -418,7 +418,9 @@ final class BiblePlayerViewModel: ObservableObject {
         updateNowPlayingInfo()
     }
 
-    func stop() {
+    /// - Parameter silently: `true` for an automatic stop the user did not tap
+    ///   (sleep timer expiry), which ends playback without any feedback.
+    func stop(silently: Bool = false) {
         cancelNavigationSnapBack()
         shouldResumeAfterAudioInterruption = false
         var pausedElapsed: TimeInterval = 0
@@ -457,7 +459,9 @@ final class BiblePlayerViewModel: ObservableObject {
         }
 
         deactivateAudioSessionForStop()
-        AccessibilitySupport.haptic(.stop)
+        if !silently {
+            AccessibilitySupport.haptic(.stop)
+        }
         refreshLaunchResumeOffer()
     }
 
@@ -1095,7 +1099,7 @@ final class BiblePlayerViewModel: ObservableObject {
                 return
             }
 
-            self?.stop()
+            self?.stop(silently: true)
         }
     }
 
